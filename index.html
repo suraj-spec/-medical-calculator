@@ -1,960 +1,1704 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Calculator Pro</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #1a2a6c;
-            --secondary: #b21f1f;
-            --accent: #3498db;
-            --light: #f8f9fa;
-            --dark: #222;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --gray: #6c757d;
-            --border-radius: 12px;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --transition: all 0.3s ease;
-        }
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { 
+  Droplet, Activity, FlaskConical, Scale, HeartPulse, 
+  AlertTriangle, Info, Moon, Sun, Search, History, 
+  Save, RefreshCw, FileText, Thermometer, 
+  Syringe, Flask, Droplets, Ruler, Brain, 
+  AlertCircle, CheckCircle2, ArrowLeftRight, Star
+} from 'lucide-react';
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
-            color: #333;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        header {
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .tagline {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .tabs {
-            display: flex;
-            background: #f1f5f9;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--gray);
-            transition: var(--transition);
-            border-bottom: 3px solid transparent;
-        }
-
-        .tab:hover {
-            color: var(--primary);
-            background: rgba(26, 42, 108, 0.05);
-        }
-
-        .tab.active {
-            color: var(--primary);
-            border-bottom: 3px solid var(--primary);
-            background: white;
-        }
-
-        .tab i {
-            margin-right: 8px;
-            font-size: 1.1em;
-        }
-
-        .tab-content {
-            display: none;
-            padding: 25px;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .calculator-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-        }
-
-        .calculator-card {
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            transition: var(--transition);
-            border: 1px solid #e9ecef;
-        }
-
-        .calculator-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-        }
-
-        .card-header {
-            background: linear-gradient(to right, #f8f9fa, #e9ecef);
-            padding: 18px 20px;
-            border-bottom: 1px solid #dee2e6;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .card-header h2 {
-            font-size: 1.4rem;
-            color: var(--primary);
-            margin: 0;
-        }
-
-        .card-header i {
-            font-size: 1.5rem;
-            color: var(--secondary);
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #495057;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        label i {
-            color: var(--gray);
-            font-size: 0.9em;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            font-size: 1rem;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            transition: var(--transition);
-            background: #f8f9fa;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-            background: white;
-        }
-
-        .inline-inputs {
-            display: flex;
-            gap: 10px;
-        }
-
-        .inline-inputs > div {
-            flex: 1;
-        }
-
-        button {
-            padding: 13px 25px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        button:hover {
-            background: var(--secondary);
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .result {
-            margin-top: 20px;
-            background: #e8f4fe;
-            border-radius: 8px;
-            padding: 18px;
-            border-left: 4px solid var(--accent);
-            display: none;
-        }
-
-        .result-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .result-value {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--secondary);
-        }
-
-        .formula {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 0.95rem;
-            border-left: 3px solid var(--primary);
-        }
-
-        .formula-title {
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .formula-content {
-            line-height: 1.7;
-        }
-
-        .error {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .reference-list {
-            padding: 0;
-            margin: 0;
-            list-style: none;
-        }
-
-        .reference-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .reference-list li:last-child {
-            border-bottom: none;
-        }
-
-        .reference-list i {
-            color: var(--primary);
-            margin-top: 4px;
-        }
-
-        footer {
-            background: #f1f5f9;
-            padding: 20px;
-            text-align: center;
-            color: var(--gray);
-            font-size: 0.95rem;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .disclaimer {
-            background: #fff8e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            border-left: 3px solid var(--warning);
-        }
-
-        @media (max-width: 768px) {
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .tab {
-                border-bottom: 1px solid #e2e8f0;
-                border-left: 3px solid transparent;
-            }
-            
-            .tab.active {
-                border-left: 3px solid var(--primary);
-                border-bottom: 1px solid #e2e8f0;
-            }
-            
-            .calculator-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 2.2rem;
-            }
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <header>
-        <h1><i class="fas fa-calculator"></i> Medical Calculator Pro</h1>
-        <p class="tagline">Accurate clinical calculations for healthcare professionals with enhanced safety checks</p>
-    </header>
-    
-    <div class="tabs">
-        <div class="tab active" onclick="showTab('calculators')">
-            <i class="fas fa-calculator"></i> Calculators
-        </div>
-        <div class="tab" onclick="showTab('formulas')">
-            <i class="fas fa-book"></i> Formulas
-        </div>
-        <div class="tab" onclick="showTab('references')">
-            <i class="fas fa-file-medical"></i> References
-        </div>
-    </div>
-    
-    <div id="calculators-content" class="tab-content active">
-        <div class="calculator-grid">
-            <!-- Fluid Calculation -->
-            <div class="calculator-card">
-                <div class="card-header">
-                    <i class="fas fa-tint"></i>
-                    <h2>Fluid Calculation</h2>
-                </div>
-                <div class="card-body">
-                    <div class="input-group">
-                        <label for="weight"><i class="fas fa-weight"></i> Patient Weight (kg)</label>
-                        <input type="number" id="weight" placeholder="e.g. 70" min="1" max="300">
-                        <div class="error" id="weight-error">Please enter a valid weight (1-300 kg)</div>
-                    </div>
-                    <div class="input-group">
-                        <label for="age"><i class="fas fa-user"></i> Patient Age (years)</label>
-                        <input type="number" id="age" placeholder="e.g. 40" min="0" max="120">
-                        <div class="error" id="age-error">Please enter a valid age (0-120 years)</div>
-                    </div>
-                    <button onclick="calculateFluid()">
-                        <i class="fas fa-calculator"></i> Calculate Fluid Needs
-                    </button>
-                    <div id="fluid-result" class="result">
-                        <div class="result-title"><i class="fas fa-vial"></i> Fluid Requirements (per 24 hours)</div>
-                        <p>Maintenance Fluid: <span id="maintenance-fluid" class="result-value">0 mL/day</span></p>
-                        <p>Replacement Fluid: <span id="replacement-fluid" class="result-value">0 mL/day</span></p>
-                        <p>Total Fluid: <span id="total-fluid" class="result-value">0 mL/day</span></p>
-                    </div>
-                    <div class="formula">
-                        <div class="formula-title"><i class="fas fa-square-root-alt"></i> Formulas:</div>
-                        <div class="formula-content">
-                            <div>Children (4-2-1 Rule):</div>
-                            <div> First 10 kg: 4 mL/kg/hr</div>
-                            <div> Next 10 kg: 2 mL/kg/hr</div>
-                            <div> Rest: 1 mL/kg/hr</div>
-                            <div>Maintenance (per 24h) = [Sum above] × 24</div>
-                            <div>Adults: 30 mL/kg/day</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Drop Factor Calculation -->
-            <div class="calculator-card">
-                <div class="card-header">
-                    <i class="fas fa-hourglass-half"></i>
-                    <h2>Drop Factor Calculation</h2>
-                </div>
-                <div class="card-body">
-                    <div class="input-group">
-                        <label for="volume"><i class="fas fa-prescription-bottle"></i> Volume (mL)</label>
-                        <input type="number" id="volume" placeholder="e.g. 500" min="1" max="5000">
-                        <div class="error" id="volume-error">Please enter volume (1-5000 mL)</div>
-                    </div>
-                    <div class="input-group">
-                        <label for="time"><i class="fas fa-clock"></i> Time (minutes)</label>
-                        <input type="number" id="time" placeholder="e.g. 120" min="1" max="1440">
-                        <div class="error" id="time-error">Please enter time (1-1440 min)</div>
-                    </div>
-                    <div class="input-group">
-                        <label for="drop-factor"><i class="fas fa-tint"></i> Drop Factor</label>
-                        <select id="drop-factor">
-                            <option value="10">10 gtt/mL (Blood Set)</option>
-                            <option value="15">15 gtt/mL (Standard Set)</option>
-                            <option value="20">20 gtt/mL (Microdrip)</option>
-                            <option value="60">60 gtt/mL (Microdrip)</option>
-                        </select>
-                    </div>
-                    <button onclick="calculateDrops()">
-                        <i class="fas fa-calculator"></i> Calculate Drops per Minute
-                    </button>
-                    <div id="drops-result" class="result">
-                        <div class="result-title"><i class="fas fa-tachometer-alt"></i> Drip Rate</div>
-                        <p>Drops per Minute: <span id="drops-per-minute" class="result-value">0 gtt/min</span></p>
-                    </div>
-                    <div class="formula">
-                        <div class="formula-title"><i class="fas fa-square-root-alt"></i> Formula:</div>
-                        <div class="formula-content">
-                            <div>Drops/min = (Volume × Drop Factor) / Time (min)</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ABG Analysis -->
-            <div class="calculator-card">
-                <div class="card-header">
-                    <i class="fas fa-lungs"></i>
-                    <h2>ABG Analysis</h2>
-                </div>
-                <div class="card-body">
-                    <div class="input-group">
-                        <label for="ph"><i class="fas fa-vial"></i> pH</label>
-                        <input type="number" id="ph" step="0.01" placeholder="e.g. 7.34" min="6.8" max="7.8">
-                        <div class="error" id="ph-error">pH must be between 6.8-7.8</div>
-                    </div>
-                    <div class="input-group">
-                        <label for="pco2"><i class="fas fa-vial"></i> pCO₂ (mmHg)</label>
-                        <input type="number" id="pco2" step="0.1" placeholder="e.g. 40" min="10" max="100">
-                        <div class="error" id="pco2-error">pCO₂ must be between 10-100 mmHg</div>
-                    </div>
-                    <div class="input-group">
-                        <label for="hco3"><i class="fas fa-vial"></i> HCO₃⁻ (mmol/L)</label>
-                        <input type="number" id="hco3" step="0.1" placeholder="e.g. 24" min="10" max="50">
-                        <div class="error" id="hco3-error">HCO₃⁻ must be between 10-50 mmol/L</div>
-                    </div>
-                    <button onclick="analyzeABG()">
-                        <i class="fas fa-calculator"></i> Analyze ABG
-                    </button>
-                    <div id="abg-result" class="result">
-                        <div class="result-title"><i class="fas fa-file-medical"></i> ABG Analysis Result</div>
-                        <div class="abg-result-item"><strong>Primary Disorder:</strong> <span id="primary-disorder"></span></div>
-                        <div class="abg-result-item"><strong>Compensation:</strong> <span id="compensation"></span></div>
-                        <div class="abg-result-item"><strong>Interpretation:</strong> <span id="interpretation"></span></div>
-                        <div class="abg-result-item"><strong>Clinical Note:</strong> <span id="correction"></span></div>
-                    </div>
-                    <div class="formula">
-                        <div class="formula-title"><i class="fas fa-info-circle"></i> Reference Ranges:</div>
-                        <div class="formula-content">
-                            <div>pH: 7.35-7.45 | pCO₂: 35-45 mmHg | HCO₃⁻: 22-26 mmol/L</div>
-                            <div>Acidosis: pH &lt; 7.35 | Alkalosis: pH &gt; 7.45</div>
-                            <div>Respiratory: pCO₂ changes | Metabolic: HCO₃⁻ changes</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Infusion Calculation -->
-            <div class="calculator-card">
-                <div class="card-header">
-                    <i class="fas fa-syringe"></i>
-                    <h2>Infusion Calculation</h2>
-                </div>
-                <div class="card-body">
-                    <div class="input-group">
-                        <label for="inf-dose"><i class="fas fa-prescription"></i> Dose (mcg/kg/min)</label>
-                        <input type="number" id="inf-dose" placeholder="e.g. 5" min="0.1" max="100" step="0.1">
-                        <div class="error" id="inf-dose-error">Dose must be 0.1-100 mcg/kg/min</div>
-                    </div>
-                    <div class="input-group">
-                        <label for="pat-weight"><i class="fas fa-weight"></i> Patient Weight (kg)</label>
-                        <input type="number" id="pat-weight" placeholder="e.g. 70" min="1" max="300">
-                        <div class="error" id="pat-weight-error">Weight must be 1-300 kg</div>
-                    </div>
-                    <div class="input-group">
-                        <label for="drug-amount"><i class="fas fa-pills"></i> Drug Amount (mg in bag)</label>
-                        <input type="number" id="drug-amount" placeholder="e.g. 250" min="1" max="5000">
-                        <div class="error" id="drug-amount-error">Amount must be 1-5000 mg</div>
-                    </div>
-                    <div class="input-group">
-                        <label for="bag-volume"><i class="fas fa-flask"></i> Total Volume (mL in bag)</label>
-                        <input type="number" id="bag-volume" placeholder="e.g. 250" min="1" max="1000">
-                        <div class="error" id="bag-volume-error">Volume must be 1-1000 mL</div>
-                    </div>
-                    <button onclick="calculateInfusion()">
-                        <i class="fas fa-calculator"></i> Calculate Infusion Rate
-                    </button>
-                    <div id="infusion-result" class="result">
-                        <div class="result-title"><i class="fas fa-tachometer-alt"></i> Infusion Parameters</div>
-                        <p>Concentration: <span id="inf-conc" class="result-value"></span> mcg/mL</p>
-                        <p>Infusion Rate: <span id="inf-rate" class="result-value"></span> mL/hr</p>
-                    </div>
-                    <div class="formula">
-                        <div class="formula-title"><i class="fas fa-square-root-alt"></i> Formulas:</div>
-                        <div class="formula-content">
-                            <div>Concentration (mcg/mL) = [Drug Amount (mg) × 1000] / Volume (mL)</div>
-                            <div>Infusion Rate (mL/hr) = [Dose × Weight × 60] / Concentration</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="formulas-content" class="tab-content">
-        <div class="calculator-card">
-            <div class="card-header">
-                <i class="fas fa-book"></i>
-                <h2>Medical Formulas Reference</h2>
-            </div>
-            <div class="card-body">
-                <div class="formula">
-                    <div class="formula-title"><i class="fas fa-tint"></i> Fluid Requirements</div>
-                    <div class="formula-content">
-                        <div>Children (4-2-1 Rule):</div>
-                        <div> First 10 kg: 4 mL/kg/hr</div>
-                        <div> Next 10 kg: 2 mL/kg/hr</div>
-                        <div> Rest: 1 mL/kg/hr</div>
-                        <div> Total per 24h = [Sum above] × 24</div>
-                        <div>Adults: 30 mL/kg/day</div>
-                    </div>
-                </div>
-                
-                <div class="formula">
-                    <div class="formula-title"><i class="fas fa-hourglass-half"></i> Drip Rate</div>
-                    <div class="formula-content">
-                        <div>Drops per min = (Volume × Drop Factor) / Time</div>
-                    </div>
-                </div>
-                
-                <div class="formula">
-                    <div class="formula-title"><i class="fas fa-syringe"></i> Infusion Rate (mcg/kg/min dosing)</div>
-                    <div class="formula-content">
-                        <div>Conc. (mcg/mL) = Drug (mg) × 1000 / Volume (mL)</div>
-                        <div>Rate (mL/hr) = Dose × Weight × 60 / Conc.</div>
-                    </div>
-                </div>
-                
-                <div class="formula">
-                    <div class="formula-title"><i class="fas fa-lungs"></i> ABG Interpretation</div>
-                    <div class="formula-content">
-                        <div><strong>Metabolic Acidosis:</strong> pH ↓, HCO₃⁻ ↓</div>
-                        <div><strong>Respiratory Acidosis:</strong> pH ↓, pCO₂ ↑</div>
-                        <div><strong>Metabolic Alkalosis:</strong> pH ↑, HCO₃⁻ ↑</div>
-                        <div><strong>Respiratory Alkalosis:</strong> pH ↑, pCO₂ ↓</div>
-                        <div><strong>Compensation:</strong> The system not primarily affected responds to normalize pH</div>
-                    </div>
-                </div>
-                
-                <div class="formula">
-                    <div class="formula-title"><i class="fas fa-pills"></i> Drug Dose Calculation</div>
-                    <div class="formula-content">
-                        <div>Amount = (Prescribed Dose / Available Dose) × Quantity</div>
-                        <div>Ensure unit consistency (mg, mcg, g)</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="references-content" class="tab-content">
-        <div class="calculator-card">
-            <div class="card-header">
-                <i class="fas fa-file-medical"></i>
-                <h2>Clinical References</h2>
-            </div>
-            <div class="card-body">
-                <ul class="reference-list">
-                    <li>
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <strong>Double-check all calculations</strong> before administration. Use a second method to verify critical calculations.
-                        </div>
-                    </li>
-                    <li>
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <strong>Consult with a pharmacist</strong> for complex dosing, pediatric calculations, or when using high-risk medications.
-                        </div>
-                    </li>
-                    <li>
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <strong>Verify calculations</strong> with a second healthcare professional for high-risk medications and pediatric patients.
-                        </div>
-                    </li>
-                    <li>
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <strong>Pediatric dosing</strong> should always be weight-based and cross-verified using established pediatric references.
-                        </div>
-                    </li>
-                    <li>
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <strong>Infusion safety</strong>: Use smart pumps with drug libraries when available. Always confirm pump settings.
-                        </div>
-                    </li>
-                </ul>
-                
-                <div class="disclaimer">
-                    <div class="formula-title"><i class="fas fa-exclamation-triangle"></i> Disclaimer</div>
-                    <p>This calculator is for educational and reference purposes only. It should not replace clinical judgment. Always follow your institution's protocols and guidelines. The developers are not liable for any errors or adverse outcomes resulting from the use of this tool.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <footer>
-        <p><i class="fas fa-shield-alt"></i> Medical Calculator Pro &copy; 2025 | For Clinical Use Only | Validated by Healthcare Professionals</p>
-        <p>Always use with clinical judgment and institutional protocols</p>
-    </footer>
-</div>
-
-<script>
-// Tab navigation
-function showTab(tabName) {
-    document.getElementById('calculators-content').classList.remove('active');
-    document.getElementById('formulas-content').classList.remove('active');
-    document.getElementById('references-content').classList.remove('active');
-    
-    let tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => tab.classList.remove('active'));
-    
-    document.getElementById(tabName + '-content').classList.add('active');
-    tabs[["calculators","formulas","references"].indexOf(tabName)].classList.add('active');
-}
-
-// Fluid Calculation with validation
-function calculateFluid() {
-    // Reset errors
-    document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
-    
-    let weight = parseFloat(document.getElementById('weight').value);
-    let age = parseFloat(document.getElementById('age').value);
-    let valid = true;
-    
-    // Validation
-    if (isNaN(weight) || weight < 1 || weight > 300) {
-        document.getElementById('weight-error').style.display = 'block';
-        valid = false;
-    }
-    if (isNaN(age) || age < 0 || age > 120) {
-        document.getElementById('age-error').style.display = 'block';
-        valid = false;
-    }
-    if (!valid) return;
-    
-    let maintenanceFluid = 0, replacementFluid = 0, totalFluid = 0;
-    
-    if (age < 18) {
-        // Pediatric 4-2-1 Rule
-        let rate = 0;
-        if (weight <= 10) {
-            rate = weight * 4;
-        } else if (weight <= 20) {
-            rate = (10 * 4) + ((weight - 10) * 2);
-        } else {
-            rate = (10 * 4) + (10 * 2) + ((weight - 20) * 1);
-        }
-        maintenanceFluid = rate * 24;
-    } else {
-        maintenanceFluid = weight * 30;
-    }
-    
-    // For this example, replacement is 0
-    totalFluid = maintenanceFluid + replacementFluid;
-    
-    document.getElementById('maintenance-fluid').textContent = Math.round(maintenanceFluid) + ' mL/day';
-    document.getElementById('replacement-fluid').textContent = Math.round(replacementFluid) + ' mL/day';
-    document.getElementById('total-fluid').textContent = Math.round(totalFluid) + ' mL/day';
-    document.getElementById('fluid-result').style.display = 'block';
-}
-
-// Drip Rate Calculation with validation
-function calculateDrops() {
-    // Reset errors
-    document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
-    
-    let volume = parseFloat(document.getElementById('volume').value);
-    let time = parseFloat(document.getElementById('time').value);
-    let dropFactor = parseFloat(document.getElementById('drop-factor').value);
-    let valid = true;
-    
-    // Validation
-    if (isNaN(volume) || volume < 1 || volume > 5000) {
-        document.getElementById('volume-error').style.display = 'block';
-        valid = false;
-    }
-    if (isNaN(time) || time < 1 || time > 1440) {
-        document.getElementById('time-error').style.display = 'block';
-        valid = false;
-    }
-    if (!valid) return;
-    
-    let dropsPerMinute = (volume * dropFactor) / time;
-    
-    document.getElementById('drops-per-minute').textContent = dropsPerMinute.toFixed(1) + ' gtt/min';
-    document.getElementById('drops-result').style.display = 'block';
-}
-
-// Enhanced ABG Analysis with validation and improved logic
-function analyzeABG() {
-    // Reset errors
-    document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
-    
-    let ph = parseFloat(document.getElementById('ph').value);
-    let pco2 = parseFloat(document.getElementById('pco2').value);
-    let hco3 = parseFloat(document.getElementById('hco3').value);
-    let valid = true;
-    
-    // Validation
-    if (isNaN(ph) || ph < 6.8 || ph > 7.8) {
-        document.getElementById('ph-error').style.display = 'block';
-        valid = false;
-    }
-    if (isNaN(pco2) || pco2 < 10 || pco2 > 100) {
-        document.getElementById('pco2-error').style.display = 'block';
-        valid = false;
-    }
-    if (isNaN(hco3) || hco3 < 10 || hco3 > 50) {
-        document.getElementById('hco3-error').style.display = 'block';
-        valid = false;
-    }
-    if (!valid) return;
-    
-    let primaryDisorder = '', compensation = '', interpretation = '', correction = '';
-    
-    // Determine acid-base status
-    if (ph < 7.35) {
-        // Acidemia
-        if (pco2 > 45 && hco3 < 22) {
-            primaryDisorder = 'Mixed Acidosis (Respiratory and Metabolic)';
-            interpretation = 'Both respiratory and metabolic components are contributing to acidosis.';
-        } else if (pco2 > 45) {
-            primaryDisorder = 'Respiratory Acidosis';
-            interpretation = 'Impaired CO₂ elimination is causing acidosis.';
-        } else if (hco3 < 22) {
-            primaryDisorder = 'Metabolic Acidosis';
-            interpretation = 'Loss of bicarbonate or acid accumulation is causing acidosis.';
-        } else {
-            primaryDisorder = 'Mild Acidosis (check other factors)';
-            interpretation = 'pH is acidic but both pCO₂ and HCO₃⁻ are within normal range.';
-        }
-    } else if (ph > 7.45) {
-        // Alkalemia
-        if (pco2 < 35 && hco3 > 26) {
-            primaryDisorder = 'Mixed Alkalosis (Respiratory and Metabolic)';
-            interpretation = 'Both respiratory and metabolic components are contributing to alkalosis.';
-        } else if (pco2 < 35) {
-            primaryDisorder = 'Respiratory Alkalosis';
-            interpretation = 'Hyperventilation is causing alkalosis.';
-        } else if (hco3 > 26) {
-            primaryDisorder = 'Metabolic Alkalosis';
-            interpretation = 'Bicarbonate retention or acid loss is causing alkalosis.';
-        } else {
-            primaryDisorder = 'Mild Alkalosis (check other factors)';
-            interpretation = 'pH is alkaline but both pCO₂ and HCO₃⁻ are within normal range.';
-        }
-    } else {
-        primaryDisorder = 'Normal pH';
-        interpretation = 'pH is within normal physiological range.';
-    }
-    
-    // Compensation
-    if (primaryDisorder.includes('Respiratory Acidosis')) {
-        if (hco3 > 26) {
-            compensation = 'Compensated by metabolic alkalosis';
-        } else if (hco3 < 22) {
-            compensation = 'Mixed with metabolic acidosis';
-        } else {
-            compensation = 'No significant compensation';
-        }
-    } else if (primaryDisorder.includes('Metabolic Acidosis')) {
-        // Winter's formula: Expected pCO₂ = 1.5 × HCO₃⁻ + 8 ± 2
-        let expectedPCO2 = 1.5 * hco3 + 8;
-        if (pco2 > expectedPCO2 + 2) {
-            compensation = 'Respiratory acidosis contributing (inadequate compensation)';
-        } else if (pco2 < expectedPCO2 - 2) {
-            compensation = 'Respiratory alkalosis present (overcompensation)';
-        } else {
-            compensation = 'Appropriate respiratory compensation';
-        }
-    } else if (primaryDisorder.includes('Respiratory Alkalosis')) {
-        if (hco3 < 22) {
-            compensation = 'Compensated by metabolic acidosis';
-        } else if (hco3 > 26) {
-            compensation = 'Mixed with metabolic alkalosis';
-        } else {
-            compensation = 'No significant compensation';
-        }
-    } else if (primaryDisorder.includes('Metabolic Alkalosis')) {
-        // Expected pCO₂ = 0.7 × HCO₃⁻ + 20 ± 1.5
-        let expectedPCO2 = 0.7 * hco3 + 20;
-        if (pco2 > expectedPCO2 + 1.5) {
-            compensation = 'Respiratory acidosis contributing (inadequate compensation)';
-        } else if (pco2 < expectedPCO2 - 1.5) {
-            compensation = 'Respiratory alkalosis present (overcompensation)';
-        } else {
-            compensation = 'Appropriate respiratory compensation';
-        }
-    } else {
-        compensation = 'No compensation needed';
-    }
-    
-    // Clinical note
-    if (primaryDisorder.includes('Acidosis')) {
-        correction = 'Treat underlying cause. Consider bicarbonate only in severe cases (pH < 7.1).';
-    } else if (primaryDisorder.includes('Alkalosis')) {
-        correction = 'Treat underlying cause. Correct electrolyte imbalances.';
-    } else {
-        correction = 'No specific intervention needed based on ABG alone.';
-    }
-    
-    document.getElementById('primary-disorder').textContent = primaryDisorder;
-    document.getElementById('compensation').textContent = compensation;
-    document.getElementById('interpretation').textContent = interpretation;
-    document.getElementById('correction').textContent = correction;
-    document.getElementById('abg-result').style.display = 'block';
-}
-
-// Infusion Calculation with validation
-function calculateInfusion() {
-    // Reset errors
-    document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
-    
-    let dose = parseFloat(document.getElementById('inf-dose').value);
-    let weight = parseFloat(document.getElementById('pat-weight').value);
-    let drugAmount = parseFloat(document.getElementById('drug-amount').value);
-    let bagVolume = parseFloat(document.getElementById('bag-volume').value);
-    let valid = true;
-    
-    // Validation
-    if (isNaN(dose) || dose < 0.1 || dose > 100) {
-        document.getElementById('inf-dose-error').style.display = 'block';
-        valid = false;
-    }
-    if (isNaN(weight) || weight < 1 || weight > 300) {
-        document.getElementById('pat-weight-error').style.display = 'block';
-        valid = false;
-    }
-    if (isNaN(drugAmount) || drugAmount < 1 || drugAmount > 5000) {
-        document.getElementById('drug-amount-error').style.display = 'block';
-        valid = false;
-    }
-    if (isNaN(bagVolume) || bagVolume < 1 || bagVolume > 1000) {
-        document.getElementById('bag-volume-error').style.display = 'block';
-        valid = false;
-    }
-    if (!valid) return;
-    
-    let conc = (drugAmount * 1000) / bagVolume;
-    let rate = (dose * weight * 60) / conc;
-    
-    document.getElementById('inf-conc').textContent = conc.toFixed(1) + ' mcg/mL';
-    document.getElementById('inf-rate').textContent = rate.toFixed(2) + ' mL/hr';
-    document.getElementById('infusion-result').style.display = 'block';
-}
-
-// Hide results when inputs change
-function setupInputListeners() {
-    // Fluid calculator
-    document.getElementById('weight').addEventListener('input', function() {
-        document.getElementById('fluid-result').style.display = 'none';
-    });
-    document.getElementById('age').addEventListener('input', function() {
-        document.getElementById('fluid-result').style.display = 'none';
-    });
-    
-    // Drip rate calculator
-    document.getElementById('volume').addEventListener('input', function() {
-        document.getElementById('drops-result').style.display = 'none';
-    });
-    document.getElementById('time').addEventListener('input', function() {
-        document.getElementById('drops-result').style.display = 'none';
-    });
-    document.getElementById('drop-factor').addEventListener('change', function() {
-        document.getElementById('drops-result').style.display = 'none';
-    });
-    
-    // ABG calculator
-    document.getElementById('ph').addEventListener('input', function() {
-        document.getElementById('abg-result').style.display = 'none';
-    });
-    document.getElementById('pco2').addEventListener('input', function() {
-        document.getElementById('abg-result').style.display = 'none';
-    });
-    document.getElementById('hco3').addEventListener('input', function() {
-        document.getElementById('abg-result').style.display = 'none';
-    });
-    
-    // Infusion calculator
-    document.getElementById('inf-dose').addEventListener('input', function() {
-        document.getElementById('infusion-result').style.display = 'none';
-    });
-    document.getElementById('pat-weight').addEventListener('input', function() {
-        document.getElementById('infusion-result').style.display = 'none';
-    });
-    document.getElementById('drug-amount').addEventListener('input', function() {
-        document.getElementById('infusion-result').style.display = 'none';
-    });
-    document.getElementById('bag-volume').addEventListener('input', function() {
-        document.getElementById('infusion-result').style.display = 'none';
-    });
-}
-
-// Initialize when page loads
-window.onload = function() {
-    setupInputListeners();
-    // Set default values for demonstration
-    document.getElementById('weight').value = '70';
-    document.getElementById('age').value = '40';
-    document.getElementById('volume').value = '500';
-    document.getElementById('time').value = '120';
-    document.getElementById('ph').value = '7.35';
-    document.getElementById('pco2').value = '40';
-    document.getElementById('hco3').value = '24';
-    document.getElementById('inf-dose').value = '5';
-    document.getElementById('pat-weight').value = '70';
-    document.getElementById('drug-amount').value = '250';
-    document.getElementById('bag-volume').value = '250';
+// Constants
+const NORMAL_RANGES = {
+  pH: { min: 7.35, max: 7.45 },
+  paco2: { min: 35, max: 45 },
+  hco3: { min: 22, max: 26 },
+  pao2: { min: 80, max: 100 },
+  lactate: { max: 2.0 },
+  potassium: { min: 3.5, max: 5.0 }
 };
-</script>
-</body>
-</html>
+
+const DRUG_LIMITS = {
+  vancomycin: { maxDose: 2000, message: 'Vancomycin dose exceeds 2g' },
+  amoxicillin: { maxDose: 1000, message: 'Amoxicillin dose exceeds 1g' }
+};
+
+// Utility functions
+const validateInput = (value, min, max) => {
+  const num = parseFloat(value);
+  if (isNaN(num)) return false;
+  if (min !== undefined && num < min) return false;
+  if (max !== undefined && num > max) return false;
+  return true;
+};
+
+const formatNumber = (num, decimals = 1) => {
+  return parseFloat(num).toFixed(decimals);
+};
+
+// Warning Display Component
+const WarningDisplay = ({ warnings }) => {
+  if (!warnings.length) return null;
+
+  return (
+    <div className="space-y-2 mb-4">
+      {warnings.map((warning, index) => (
+        <div
+          key={index}
+          className={`p-3 rounded-lg border flex items-start space-x-2 ${
+            warning.severity === 'critical'
+              ? 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
+              : warning.severity === 'warning'
+              ? 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
+              : 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
+          }`}
+        >
+          {warning.severity === 'critical' ? (
+            <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          ) : warning.severity === 'warning' ? (
+            <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+          ) : (
+            <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          )}
+          <div>
+            <p className={`font-medium ${
+              warning.severity === 'critical'
+                ? 'text-red-800 dark:text-red-200'
+                : warning.severity === 'warning'
+                ? 'text-yellow-800 dark:text-yellow-200'
+                : 'text-blue-800 dark:text-blue-200'
+            }`}>
+              {warning.message}
+            </p>
+            {warning.details && (
+              <p className={`text-sm mt-1 ${
+                warning.severity === 'critical'
+                  ? 'text-red-600 dark:text-red-300'
+                  : warning.severity === 'warning'
+                  ? 'text-yellow-600 dark:text-yellow-300'
+                  : 'text-blue-600 dark:text-blue-300'
+              }`}>
+                {warning.details}
+              </p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Calculator Form Component
+const CalculatorForm = ({ activeTab, inputs, onInputChange, onCalculate }) => {
+  const renderInput = (label, name, type = 'number', placeholder, unit, info = '') => (
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        {label}
+        {info && (
+          <span className="ml-1 cursor-help" title={info}>
+            <Info className="inline w-4 h-4 text-gray-400" />
+          </span>
+        )}
+      </label>
+      <div className="relative">
+        <input
+          type={type}
+          value={inputs[name] || ''}
+          onChange={e => onInputChange(activeTab, name, e.target.value)}
+          className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg 
+                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white transition-colors"
+          placeholder={placeholder}
+          aria-label={label}
+        />
+        {unit && (
+          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 
+                        text-gray-500 dark:text-gray-400 text-sm">
+            {unit}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderSelect = (label, name, options, info = '') => (
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        {label}
+        {info && (
+          <span className="ml-1 cursor-help" title={info}>
+            <Info className="inline w-4 h-4 text-gray-400" />
+          </span>
+        )}
+      </label>
+      <select
+        value={inputs[name] || ''}
+        onChange={e => onInputChange(activeTab, name, e.target.value)}
+        className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg 
+                  focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white"
+      >
+        {options.map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const getFormContent = () => {
+    switch (activeTab) {
+      case 'abg':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {renderInput('pH', 'ph', 'number', '7.40', '', 'Normal: 7.35-7.45')}
+              {renderInput('PaCO₂ (mmHg)', 'paco2', 'number', '40', 'mmHg', 'Normal: 35-45')}
+              {renderInput('HCO₃⁻ (mEq/L)', 'hco3', 'number', '24', 'mEq/L', 'Normal: 22-26')}
+              {renderInput('PaO₂ (mmHg)', 'pao2', 'number', '80', 'mmHg', 'Normal: 80-100')}
+              {renderInput('FiO₂ (%)', 'fio2', 'number', '21', '%', 'Room air: 21')}
+              {renderInput('Lactate (mmol/L)', 'lactate', 'number', '1.0', 'mmol/L', 'Normal: <2.0')}
+            </div>
+            
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h4 className="font-medium text-blue-800 dark:text-blue-200 flex items-center mb-2">
+                <Thermometer className="w-4 h-4 mr-2" />
+                Interpretation Guide
+              </h4>
+              <ul className="list-disc pl-5 text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                <li>pH &lt; 7.35 = Acidemia</li>
+                <li>pH &gt; 7.45 = Alkalemia</li>
+                <li>HCO₃⁻ &lt; 22 = Metabolic acidosis</li>
+                <li>PaCO₂ &gt; 45 = Respiratory acidosis</li>
+                <li>P/F ratio &lt; 300 = ARDS</li>
+              </ul>
+            </div>
+          </div>
+        );
+
+      case 'sodium':
+        return (
+          <div className="space-y-4">
+            {renderInput('Weight (kg)', 'weight', 'number', '70', 'kg')}
+            {renderInput('Current HCO₃⁻ (mEq/L)', 'currentHco3', 'number', '18', 'mEq/L')}
+            {renderInput('Target HCO₃⁻ (mEq/L)', 'targetHco3', 'number', '24', 'mEq/L')}
+            
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg">
+              <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                <strong>Formula:</strong> Deficit = 0.5 × Weight × (Target - Current) HCO₃⁻
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'potassium':
+        return (
+          <div className="space-y-4">
+            {renderInput('Weight (kg)', 'weight', 'number', '70', 'kg')}
+            {renderInput('Current K⁺ (mEq/L)', 'currentK', 'number', '3.0', 'mEq/L')}
+            {renderInput('Target K⁺ (mEq/L)', 'targetK', 'number', '4.0', 'mEq/L')}
+            
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <p className="text-sm text-purple-700 dark:text-purple-300">
+                <strong>Safety:</strong> Max peripheral rate 10 mEq/hr, central 40 mEq/hr
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'ivDrip':
+        return (
+          <div className="space-y-4">
+            {renderInput('Volume (mL)', 'volume', 'number', '1000', 'mL')}
+            {renderInput('Time (hours)', 'time', 'number', '8', 'hrs')}
+            {renderInput('Drop Factor (gtt/mL)', 'dropFactor', 'number', '20', 'gtt/mL')}
+            {renderSelect('Patient Type', 'patientType', [
+              { value: 'adult', label: 'Adult' },
+              { value: 'pediatric', label: 'Pediatric' }
+            ])}
+          </div>
+        );
+
+      case 'fluid':
+        return (
+          <div className="space-y-4">
+            {renderInput('Weight (kg)', 'weight', 'number', '70', 'kg')}
+            {renderSelect('Patient Type', 'patientType', [
+              { value: 'adult', label: 'Adult' },
+              { value: 'pediatric', label: 'Pediatric' }
+            ])}
+            
+            <div className="bg-teal-50 dark:bg-teal-900/20 p-4 rounded-lg">
+              <p className="text-sm text-teal-700 dark:text-teal-300">
+                <strong>4-2-1 Rule:</strong> 4mL/kg first 10kg, 2mL/kg next 10kg, 1mL/kg remaining
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'drug':
+        return (
+          <div className="space-y-4">
+            {renderInput('Weight (kg)', 'weight', 'number', '70', 'kg')}
+            {renderInput('Dose (mg/kg)', 'dose', 'number', '1.5', 'mg/kg')}
+            {renderInput('Concentration (mg/mL)', 'concentration', 'number', '10', 'mg/mL')}
+            {renderInput('Drug Name', 'drugName', 'text', 'Amoxicillin', '')}
+          </div>
+        );
+
+      case 'sofa':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {renderSelect('Respiratory (PaO₂/FiO₂)', 'resp', [
+                { value: '0', label: '0 - ≥400' },
+                { value: '1', label: '1 - 300-399' },
+                { value: '2', label: '2 - 200-299' },
+                { value: '3', label: '3 - 100-199' },
+                { value: '4', label: '4 - <100' }
+              ])}
+              
+              {renderSelect('Coagulation (Platelets)', 'coag', [
+                { value: '0', label: '0 - ≥150' },
+                { value: '1', label: '1 - 100-149' },
+                { value: '2', label: '2 - 50-99' },
+                { value: '3', label: '3 - 20-49' },
+                { value: '4', label: '4 - <20' }
+              ])}
+              
+              {renderSelect('Liver (Bilirubin)', 'liver', [
+                { value: '0', label: '0 - <1.2' },
+                { value: '1', label: '1 - 1.2-1.9' },
+                { value: '2', label: '2 - 2.0-5.9' },
+                { value: '3', label: '3 - 6.0-11.9' },
+                { value: '4', label: '4 - ≥12.0' }
+              ])}
+              
+              {renderSelect('Cardiovascular', 'cardio', [
+                { value: '0', label: '0 - No hypotension' },
+                { value: '1', label: '1 - MAP <70' },
+                { value: '2', label: '2 - Dopamine ≤5' },
+                { value: '3', label: '3 - Dopamine >5' },
+                { value: '4', label: '4 - High dose vasopressors' }
+              ])}
+              
+              {renderSelect('Neurological (GCS)', 'neuro', [
+                { value: '0', label: '0 - 15' },
+                { value: '1', label: '1 - 13-14' },
+                { value: '2', label: '2 - 10-12' },
+                { value: '3', label: '3 - 6-9' },
+                { value: '4', label: '4 - <6' }
+              ])}
+              
+              {renderSelect('Renal (Creatinine)', 'renal', [
+                { value: '0', label: '0 - <1.2' },
+                { value: '1', label: '1 - 1.2-1.9' },
+                { value: '2', label: '2 - 2.0-3.4' },
+                { value: '3', label: '3 - 3.5-4.9' },
+                { value: '4', label: '4 - ≥5.0' }
+              ])}
+            </div>
+          </div>
+        );
+
+      case 'bmi':
+        return (
+          <div className="space-y-4">
+            {renderInput('Weight (kg)', 'weight', 'number', '70', 'kg')}
+            {renderInput('Height (cm)', 'height', 'number', '170', 'cm')}
+          </div>
+        );
+
+      case 'glucose':
+        return (
+          <div className="space-y-4">
+            {renderInput('Weight (kg)', 'weight', 'number', '70', 'kg')}
+            {renderInput('Current Glucose (mg/dL)', 'currentGlucose', 'number', '200', 'mg/dL')}
+            {renderInput('Target Glucose (mg/dL)', 'targetGlucose', 'number', '150', 'mg/dL')}
+          </div>
+        );
+
+      default:
+        return <div>Select a calculator to begin</div>;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {getFormContent()}
+      
+      <button
+        onClick={onCalculate}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg 
+                  transition-colors duration-200 flex items-center justify-center space-x-2"
+      >
+        <Activity className="w-5 h-5" />
+        <span>Calculate</span>
+      </button>
+    </div>
+  );
+};
+
+// Calculator Grid Component
+const CalculatorGrid = ({ calculators, activeTab, onTabChange, favorites, onToggleFavorite, searchQuery }) => {
+  const filteredCalculators = calculators.filter(calculator => 
+    calculator.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    calculator.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    calculator.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const colorClasses = {
+    blue: 'from-blue-500 to-blue-600',
+    indigo: 'from-indigo-500 to-indigo-600',
+    purple: 'from-purple-500 to-purple-600',
+    cyan: 'from-cyan-500 to-cyan-600',
+    teal: 'from-teal-500 to-teal-600',
+    emerald: 'from-emerald-500 to-emerald-600',
+    amber: 'from-amber-500 to-amber-600',
+    rose: 'from-rose-500 to-rose-600',
+    violet: 'from-violet-500 to-violet-600'
+  };
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {filteredCalculators.map((calculator) => {
+        const Icon = calculator.icon;
+        const isActive = activeTab === calculator.id;
+        const isFavorite = favorites.includes(calculator.id);
+        
+        return (
+          <div
+            key={calculator.id}
+            onClick={() => onTabChange(calculator.id)}
+            className={`relative p-6 rounded-xl cursor-pointer transition-all duration-200 transform hover:scale-105 ${
+              isActive
+                ? `bg-gradient-to-br ${colorClasses[calculator.color]} text-white shadow-lg`
+                : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+            }`}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(calculator.id);
+              }}
+              className={`absolute top-3 right-3 p-1.5 rounded-full transition-colors ${
+                isFavorite
+                  ? 'text-yellow-400 hover:text-yellow-300'
+                  : isActive
+                  ? 'text-white/70 hover:text-white'
+                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+              }`}
+            >
+              <Star className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+            </button>
+            
+            <div className="flex items-center space-x-3 mb-3">
+              <Icon className={`w-8 h-8 ${
+                isActive ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+              }`} />
+              <div>
+                <h3 className={`font-semibold ${
+                  isActive ? 'text-white' : 'text-gray-900 dark:text-white'
+                }`}>
+                  {calculator.name}
+                </h3>
+                <span className={`text-sm ${
+                  isActive ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'
+                }`}>
+                  {calculator.category}
+                </span>
+              </div>
+            </div>
+            
+            <p className={`text-sm ${
+              isActive ? 'text-white/90' : 'text-gray-600 dark:text-gray-300'
+            }`}>
+              {calculator.description}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// Main App Component
+const App = () => {
+  // State management
+  const [darkMode, setDarkMode] = useState(false);
+  const [activeTab, setActiveTab] = useState('abg');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [calculatorInputs, setCalculatorInputs] = useState({});
+  const [calculationHistory, setCalculationHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [warnings, setWarnings] = useState([]);
+  const [favorites, setFavorites] = useState(['abg', 'sofa', 'fluid']);
+  const [result, setResult] = useState('');
+
+  // Initialize from localStorage
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    const savedFavorites = localStorage.getItem('favorites');
+    const savedInputs = localStorage.getItem('calculatorInputs');
+    
+    if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
+    if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
+    if (savedInputs) setCalculatorInputs(JSON.parse(savedInputs));
+  }, []);
+
+  // Dark mode setup
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  // Save to localStorage
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  useEffect(() => {
+    localStorage.setItem('calculatorInputs', JSON.stringify(calculatorInputs));
+  }, [calculatorInputs]);
+
+  // Initialize with default values
+  useEffect(() => {
+    const initialInputs = {
+      abg: { ph: '7.40', paco2: '40', hco3: '24', pao2: '80', fio2: '21', lactate: '1.0' },
+      sodium: { weight: '70', currentHco3: '18', targetHco3: '24' },
+      potassium: { weight: '70', currentK: '3.0', targetK: '4.0' },
+      ivDrip: { volume: '1000', time: '8', dropFactor: '20', patientType: 'adult' },
+      fluid: { weight: '70', patientType: 'adult' },
+      drug: { weight: '70', dose: '1.5', concentration: '10', drugName: 'Amoxicillin' },
+      sofa: { resp: '0', coag: '0', liver: '0', cardio: '0', neuro: '0', renal: '0' },
+      bmi: { weight: '70', height: '170' },
+      glucose: { weight: '70', currentGlucose: '200', targetGlucose: '150' }
+    };
+    
+    setCalculatorInputs(prev => ({ ...initialInputs, ...prev }));
+  }, []);
+
+  // Calculator registry
+  const calculators = [
+    { 
+      id: 'abg', 
+      name: 'ABG Interpreter', 
+      category: 'Respiratory', 
+      icon: Activity, 
+      color: 'blue',
+      description: 'Comprehensive arterial blood gas analysis with compensation assessment'
+    },
+    { 
+      id: 'sodium', 
+      name: 'Sodium Bicarbonate', 
+      category: 'Electrolytes', 
+      icon: FlaskConical, 
+      color: 'indigo',
+      description: 'HCO₃⁻ deficit calculation with safety limits'
+    },
+    { 
+      id: 'potassium', 
+      name: 'Potassium Correction', 
+      category: 'Electrolytes', 
+      icon: Droplets, 
+      color: 'purple',
+      description: 'K⁺ deficit calculation with max rate safety checks'
+    },
+    { 
+      id: 'ivDrip', 
+      name: 'IV Drip Rate', 
+      category: 'Infusion', 
+      icon: Droplet, 
+      color: 'cyan',
+      description: 'Drop factor calculation for adult/pediatric patients'
+    },
+    { 
+      id: 'fluid', 
+      name: 'Fluid Calculator', 
+      category: 'Infusion', 
+      icon: Ruler, 
+      color: 'teal',
+      description: '4-2-1 rule for maintenance fluids'
+    },
+    { 
+      id: 'drug', 
+      name: 'Drug Dosing', 
+      category: 'Pharmacology', 
+      icon: Syringe, 
+      color: 'emerald',
+      description: 'Weight-based dosing with max dose safety'
+    },
+    { 
+      id: 'sofa', 
+      name: 'SOFA Score', 
+      category: 'Scoring', 
+      icon: Brain, 
+      color: 'amber',
+      description: 'Sequential Organ Failure Assessment'
+    },
+    { 
+      id: 'bmi', 
+      name: 'BMI Calculator', 
+      category: 'Metrics', 
+      icon: Scale, 
+      color: 'rose',
+      description: 'Body Mass Index with classification'
+    },
+    { 
+      id: 'glucose', 
+      name: 'Insulin Dosing', 
+      category: 'Endocrine', 
+      icon: Flask, 
+      color: 'violet',
+      description: 'Glucose correction with sliding scale'
+    }
+  ];
+
+  // Toggle dark mode
+  const toggleDarkMode = useCallback(() => {
+    setDarkMode(!darkMode);
+  }, [darkMode]);
+
+  // Handle input changes
+  const handleInputChange = useCallback((calculatorId, field, value) => {
+    setCalculatorInputs(prev => ({
+      ...prev,
+      [calculatorId]: {
+        ...prev[calculatorId],
+        [field]: value
+      }
+    }));
+    
+    // Clear warnings and result when inputs change
+    setWarnings([]);
+    setResult('');
+  }, []);
+
+  // Individual calculator functions with safety checks
+  const calculateABG = (inputs, warnings) => {
+    const { ph, paco2, hco3, pao2, fio2, lactate } = inputs;
+    
+    if (!ph || !paco2 || !hco3) return 'Missing required values';
+    
+    const phVal = parseFloat(ph);
+    const paco2Val = parseFloat(paco2);
+    const hco3Val = parseFloat(hco3);
+    const pao2Val = parseFloat(pao2 || 0);
+    const fio2Val = parseFloat(fio2 || 21);
+    const lactateVal = parseFloat(lactate || 0);
+    
+    // Critical value checks
+    if (phVal < 7.2) {
+      warnings.push({ 
+        message: 'Critical acidemia detected (pH < 7.2)', 
+        severity: 'critical',
+        details: 'Consider immediate intervention for severe acidosis'
+      });
+    }
+    
+    if (phVal > 7.6) {
+      warnings.push({ 
+        message: 'Critical alkalemia detected (pH > 7.6)', 
+        severity: 'critical',
+        details: 'Risk of seizures and cardiac arrhythmias'
+      });
+    }
+    
+    if (pao2Val && fio2Val > 0) {
+      const pfratio = pao2Val / (fio2Val/100);
+      if (pfratio < 300) {
+        warnings.push({ 
+          message: `Hypoxemia: P/F ratio = ${formatNumber(pfratio, 0)}`, 
+          severity: 'warning',
+          details: pfratio < 200 ? 'Severe ARDS' : 'Mild-Moderate ARDS'
+        });
+      }
+    }
+    
+    if (lactateVal > 4) {
+      warnings.push({ 
+        message: `Severe hyperlactatemia (${lactateVal} mmol/L)`, 
+        severity: 'critical',
+        details: 'Consider sepsis, shock, or metabolic disorder'
+      });
+    }
+    
+    // Acid-base interpretation
+    let interpretation = '📊 ABG Interpretation:\n\n';
+    
+    // pH status
+    if (phVal < 7.35) interpretation += '🔴 Acidemia (pH < 7.35)\n';
+    else if (phVal > 7.45) interpretation += '🔵 Alkalemia (pH > 7.45)\n';
+    else interpretation += '✅ Normal pH (7.35-7.45)\n';
+    
+    // Primary disorder
+    let primaryDisorder = '';
+    if (hco3Val < 22) {
+      interpretation += '📉 Metabolic acidosis (HCO₃⁻ < 22)\n';
+      primaryDisorder = 'metabolic acidosis';
+    } else if (hco3Val > 26) {
+      interpretation += '📈 Metabolic alkalosis (HCO₃⁻ > 26)\n';
+      primaryDisorder = 'metabolic alkalosis';
+    }
+    
+    if (paco2Val < 35) {
+      interpretation += '💨 Respiratory alkalosis (PaCO₂ < 35)\n';
+      if (!primaryDisorder) primaryDisorder = 'respiratory alkalosis';
+    } else if (paco2Val > 45) {
+      interpretation += '🫁 Respiratory acidosis (PaCO₂ > 45)\n';
+      if (!primaryDisorder) primaryDisorder = 'respiratory acidosis';
+    }
+    
+    // Compensation analysis
+    interpretation += '\n🔄 Compensation Analysis:\n';
+    
+    if (primaryDisorder === 'metabolic acidosis') {
+      const expectedPaco2 = 40 + 0.7 * (hco3Val - 24);
+      const compensationRange = [expectedPaco2 - 2, expectedPaco2 + 2];
+      
+      if (paco2Val >= compensationRange[0] && paco2Val <= compensationRange[1]) {
+        interpretation += '✅ Appropriate respiratory compensation\n';
+      } else if (paco2Val > compensationRange[1]) {
+        interpretation += '⚠️ Inadequate respiratory compensation\n';
+      } else {
+        interpretation += '📈 Over-compensation (mixed disorder)\n';
+      }
+      
+      interpretation += `Expected PaCO₂: ${formatNumber(expectedPaco2)} ± 2 mmHg\n`;
+    }
+    
+    // Anion Gap estimation
+    const estimatedAnionGap = 12 + (24 - hco3Val);
+    interpretation += `\n🧮 Estimated Anion Gap: ${formatNumber(estimatedAnionGap)} mEq/L`;
+    if (estimatedAnionGap > 12) {
+      interpretation += ' (Elevated - suggests unmeasured anions)';
+    }
+    
+    // Delta Ratio (if anion gap elevated)
+    if (estimatedAnionGap > 12 && hco3Val < 24) {
+      const deltaRatio = (estimatedAnionGap - 12) / (24 - hco3Val);
+      interpretation += `\n📊 Delta Ratio: ${formatNumber(deltaRatio, 2)}`;
+      
+      if (deltaRatio < 1) {
+        interpretation += ' (Normal AG acidosis component)';
+      } else if (deltaRatio > 2) {
+        interpretation += ' (Concurrent metabolic alkalosis)';
+      } else {
+        interpretation += ' (Pure AG acidosis)';
+      }
+    }
+    
+    // Additional parameters
+    if (pao2Val && fio2Val) {
+      const pfratio = pao2Val / (fio2Val/100);
+      interpretation += `\n\n🫁 Oxygenation:\n• P/F Ratio: ${formatNumber(pfratio, 0)}`;
+      
+      if (pfratio >= 300) interpretation += ' (Normal)';
+      else if (pfratio >= 200) interpretation += ' (Mild ARDS)';
+      else if (pfratio >= 100) interpretation += ' (Moderate ARDS)';
+      else interpretation += ' (Severe ARDS)';
+    }
+    
+    if (lactateVal) {
+      interpretation += `\n• Lactate: ${lactateVal} mmol/L`;
+      if (lactateVal > 2) interpretation += ' (Elevated)';
+      else interpretation += ' (Normal)';
+    }
+    
+    return interpretation;
+  };
+
+  const calculateSodiumBicarbonate = (inputs, warnings) => {
+    const { weight, currentHco3, targetHco3 } = inputs;
+    
+    if (!weight || !currentHco3 || !targetHco3) return 'Missing required values';
+    
+    const weightVal = parseFloat(weight);
+    const currentVal = parseFloat(currentHco3);
+    const targetVal = parseFloat(targetHco3);
+    
+    if (currentVal >= targetVal) {
+      return 'Current HCO₃⁻ is already at or above target level';
+    }
+    
+    const deficit = 0.5 * weightVal * (targetVal - currentVal);
+    
+    // Safety checks
+    if (deficit > 200) {
+      warnings.push({ 
+        message: 'Large bicarbonate deficit (>200 mEq)', 
+        severity: 'warning',
+        details: 'Administer gradually over 4-8 hours'
+      });
+    }
+    
+    if (currentVal < 10) {
+      warnings.push({ 
+        message: 'Severe metabolic acidosis (HCO₃⁻ < 10)', 
+        severity: 'critical',
+        details: 'Consider dialysis or continuous replacement therapy'
+      });
+    }
+    
+    const ampoules = deficit / 50; // 50mEq per ampoule
+    const initialDose = Math.min(deficit / 2, 100); // Give half initially, max 100mEq
+    const initialAmpoules = initialDose / 50;
+    
+    return `💉 NaHCO₃ Calculation:\n\n` +
+           `📊 Total Deficit: ${formatNumber(deficit)} mEq\n` +
+           `💊 Total Ampoules: ${formatNumber(ampoules, 1)} (50mEq each)\n\n` +
+           `🎯 Initial Dose: ${formatNumber(initialDose)} mEq (${formatNumber(initialAmpoules, 1)} ampoules)\n` +
+           `⏱️ Remaining: ${formatNumber(deficit - initialDose)} mEq over 4-6 hours\n\n` +
+           '⚠️ Administration Guidelines:\n' +
+           '• Max rate: 1-2 ampoules over 10-15 min\n' +
+           '• Continuous ECG monitoring required\n' +
+           '• Recheck ABG after initial dose\n' +
+           '• Avoid in respiratory acidosis without ventilation\n' +
+           '• Risk of fluid overload and hypernatremia';
+  };
+
+  const calculatePotassium = (inputs, warnings) => {
+    const { weight, currentK, targetK } = inputs;
+    
+    if (!weight || !currentK || !targetK) return 'Missing required values';
+    
+    const weightVal = parseFloat(weight);
+    const currentVal = parseFloat(currentK);
+    const targetVal = parseFloat(targetK);
+    
+    if (currentVal >= targetVal) {
+      return 'Current K⁺ is already at or above target level';
+    }
+    
+    // Use distribution factor of 0.4 for total body K
+    const deficit = (targetVal - currentVal) * 0.4 * weightVal;
+    
+    // Safety checks
+    if (currentVal < 2.5) {
+      warnings.push({ 
+        message: 'Severe hypokalemia (K⁺ < 2.5 mEq/L)', 
+        severity: 'critical',
+        details: 'Risk of cardiac arrhythmias - requires continuous monitoring'
+      });
+    }
+    
+    if (currentVal < 2.0) {
+      warnings.push({ 
+        message: 'Life-threatening hypokalemia (K⁺ < 2.0 mEq/L)', 
+        severity: 'critical',
+        details: 'Consider ICU admission and aggressive replacement'
+      });
+    }
+    
+    if (deficit > 40) {
+      warnings.push({ 
+        message: 'Large potassium deficit (>40 mEq)', 
+        severity: 'warning',
+        details: 'Requires prolonged replacement over 24-48 hours'
+      });
+    }
+    
+    const ampoules = deficit / 20; // 20mEq per 20mL ampoule
+    const maxPeripheralRate = 10; // mEq/hr
+    const maxCentralRate = 40; // mEq/hr
+    const peripheralTime = deficit / maxPeripheralRate;
+    const centralTime = deficit / maxCentralRate;
+    
+    return `⚡ K⁺ Replacement Calculation:\n\n` +
+           `📊 Total Deficit: ${formatNumber(deficit)} mEq\n` +
+           `💊 Required Ampoules: ${formatNumber(ampoules, 1)} (20mEq each)\n\n` +
+           `⏱️ Administration Time:\n` +
+           `• Peripheral IV: ${formatNumber(peripheralTime, 1)} hours (10 mEq/hr max)\n` +
+           `• Central line: ${formatNumber(centralTime, 1)} hours (40 mEq/hr max)\n\n` +
+           '⚠️ Safety Guidelines:\n' +
+           '• Continuous cardiac monitoring if K⁺ < 2.5\n' +
+           '• Dilute each ampoule in 100mL NS for peripheral\n' +
+           '• Check Mg²⁺ - correct hypomagnesemia first\n' +
+           '• Recheck K⁺ after each 40mEq replacement\n' +
+           '• Monitor for signs of overcorrection';
+  };
+
+  const calculateIVDrip = (inputs, warnings) => {
+    const { volume, time, dropFactor, patientType } = inputs;
+    
+    if (!volume || !time || !dropFactor) return 'Missing required values';
+    
+    const volumeVal = parseFloat(volume);
+    const timeVal = parseFloat(time);
+    const dropFactorVal = parseFloat(dropFactor);
+    
+    const minutes = timeVal * 60;
+    const dropsPerMinute = (volumeVal * dropFactorVal) / minutes;
+    const mlPerHour = volumeVal / timeVal;
+    
+    // Pediatric safety check
+    if (patientType === 'pediatric' && dropsPerMinute > 60) {
+      warnings.push({ 
+        message: 'Excessive drip rate for pediatric patient', 
+        severity: 'critical',
+        details: 'Max safe rate: 60 gtt/min for pediatric patients'
+      });
+    }
+    
+    // Adult safety check
+    if (patientType === 'adult' && mlPerHour > 500) {
+      warnings.push({ 
+        message: 'High infusion rate (>500 mL/hr)', 
+        severity: 'warning',
+        details: 'Monitor for fluid overload'
+      });
+    }
+    
+    return `💧 IV Drip Rate Calculation:\n\n` +
+           `📊 Results:\n` +
+           `• Drops per minute: ${formatNumber(dropsPerMinute, 1)} gtt/min\n` +
+           `• Flow rate: ${formatNumber(mlPerHour, 1)} mL/hr\n\n` +
+           `📋 Parameters:\n` +
+           `• Volume: ${volumeVal} mL\n` +
+           `• Time: ${timeVal} hours\n` +
+           `• Drop Factor: ${dropFactorVal} gtt/mL\n` +
+           `• Patient Type: ${patientType === 'adult' ? 'Adult' : 'Pediatric'}\n\n` +
+           '⚠️ Safety Notes:\n' +
+           '• Count drops for 15 seconds, multiply by 4\n' +
+           '• Recheck rate every 30-60 minutes\n' +
+           '• Consider pump for rates >100 mL/hr';
+  };
+
+  const calculateFluids = (inputs, warnings) => {
+    const { weight, patientType } = inputs;
+    
+    if (!weight) return 'Missing weight value';
+    
+    const weightVal = parseFloat(weight);
+    let maintenance = 0;
+    
+    // Holliday-Segar method (4-2-1 rule)
+    if (weightVal <= 10) {
+      maintenance = weightVal * 100;
+    } else if (weightVal <= 20) {
+      maintenance = 1000 + (weightVal - 10) * 50;
+    } else {
+      maintenance = 1500 + (weightVal - 20) * 20;
+    }
+    
+    const hourlyRate = maintenance / 24;
+    
+    // Pediatric safety checks
+    if (patientType === 'pediatric') {
+      if (weightVal < 3) {
+        warnings.push({ 
+          message: 'Neonatal patient (<3kg)', 
+          severity: 'warning',
+          details: 'Consider 80-120 mL/kg/day for neonates'
+        });
+      }
+      
+      if (weightVal > 50) {
+        warnings.push({ 
+          message: 'Large pediatric patient (>50kg)', 
+          severity: 'info',
+          details: 'Consider adult maintenance calculations'
+        });
+      }
+    }
+    
+    // Fluid overload check
+    if (hourlyRate > 200) {
+      warnings.push({ 
+        message: 'High maintenance fluid rate', 
+        severity: 'warning',
+        details: 'Monitor for signs of fluid overload'
+      });
+    }
+    
+    // Calculate additional requirements
+    const feverAdjustment = maintenance * 0.12; // 12% increase per degree C above 37
+    const lossReplacement = hourlyRate * 1.5; // Typical ongoing losses
+    
+    return `💧 Maintenance Fluid Calculation:\n\n` +
+           `📊 Holliday-Segar Method (4-2-1 Rule):\n` +
+           `• Daily requirement: ${formatNumber(maintenance, 0)} mL/day\n` +
+           `• Hourly rate: ${formatNumber(hourlyRate, 1)} mL/hr\n\n` +
+           `⚖️ Weight-based breakdown:\n` +
+           `• First 10kg: 100 mL/kg/day\n` +
+           `• Next 10kg: 50 mL/kg/day\n` +
+           `• Remaining kg: 20 mL/kg/day\n\n` +
+           `📋 Additional Considerations:\n` +
+           `• Fever adjustment: +${formatNumber(feverAdjustment, 0)} mL/day per °C >37°C\n` +
+           `• Ongoing losses: ~${formatNumber(lossReplacement, 1)} mL/hr\n` +
+           `• Patient type: ${patientType === 'adult' ? 'Adult' : 'Pediatric'}\n\n` +
+           '⚠️ Adjust for:\n' +
+           '• Fever, tachypnea, phototherapy\n' +
+           '• Renal, cardiac, or hepatic disease\n' +
+           '• Ongoing losses (NG, drains, etc.)';
+  };
+
+  const calculateDrugDosing = (inputs, warnings) => {
+    const { weight, dose, concentration, drugName } = inputs;
+    
+    if (!weight || !dose || !concentration || !drugName) return 'Missing required values';
+    
+    const weightVal = parseFloat(weight);
+    const doseVal = parseFloat(dose);
+    const concentrationVal = parseFloat(concentration);
+    
+    const totalDose = doseVal * weightVal;
+    const volume = totalDose / concentrationVal;
+    
+    // Drug-specific safety checks
+    const drugKey = drugName.toLowerCase().trim();
+    
+    if (DRUG_LIMITS[drugKey] && totalDose > DRUG_LIMITS[drugKey].maxDose) {
+      warnings.push({ 
+        message: DRUG_LIMITS[drugKey].message, 
+        severity: 'warning',
+        details: `Max single dose exceeded. Consider divided dosing or alternative.`
+      });
+    }
+    
+    // General dosing warnings
+    if (doseVal > 100) {
+      warnings.push({ 
+        message: 'Unusually high mg/kg dose', 
+        severity: 'warning',
+        details: 'Verify dosing guidelines for this medication'
+      });
+    }
+    
+    if (volume > 50) {
+      warnings.push({ 
+        message: 'Large injection volume', 
+        severity: 'info',
+        details: 'Consider dilution or multiple injection sites'
+      });
+    }
+    
+    // Calculate common dosing intervals
+    const dailyDose = totalDose * 3; // TID dosing
+    const twiceDailyDose = totalDose * 2; // BID dosing
+    
+    return `💊 Drug Dosing Calculation:\n\n` +
+           `📋 ${drugName} Dosing:\n` +
+           `• Single dose: ${formatNumber(totalDose)} mg\n` +
+           `• Volume needed: ${formatNumber(volume, 2)} mL\n` +
+           `• Concentration: ${concentrationVal} mg/mL\n\n` +
+           `📊 Parameters:\n` +
+           `• Weight: ${weightVal} kg\n` +
+           `• Dose: ${doseVal} mg/kg\n\n` +
+           `📅 Common Dosing Schedules:\n` +
+           `• BID (twice daily): ${formatNumber(twiceDailyDose)} mg/day\n` +
+           `• TID (three times daily): ${formatNumber(dailyDose)} mg/day\n\n` +
+           '⚠️ Safety Reminders:\n' +
+           '• Verify drug name and concentration\n' +
+           '• Check for allergies and interactions\n' +
+           '• Confirm pediatric vs adult dosing\n' +
+           '• Consider renal/hepatic impairment\n' +
+           '• Double-check calculations independently';
+  };
+
+  const calculateSOFA = (inputs, warnings) => {
+    const { resp, coag, liver, cardio, neuro, renal } = inputs;
+    
+    const respVal = parseInt(resp) || 0;
+    const coagVal = parseInt(coag) || 0;
+    const liverVal = parseInt(liver) || 0;
+    const cardioVal = parseInt(cardio) || 0;
+    const neuroVal = parseInt(neuro) || 0;
+    const renalVal = parseInt(renal) || 0;
+    
+    const total = respVal + coagVal + liverVal + cardioVal + neuroVal + renalVal;
+    
+    let interpretation = `🧠 SOFA Score Assessment:\n\n`;
+    interpretation += `📊 Total Score: ${total} / 24\n\n`;
+    
+    // Mortality risk assessment
+    let mortalityRisk = '';
+    let riskLevel = '';
+    
+    if (total === 0) {
+      mortalityRisk = '<1%';
+      riskLevel = 'Very Low';
+    } else if (total <= 6) {
+      mortalityRisk = '<10%';
+      riskLevel = 'Low';
+    } else if (total <= 9) {
+      mortalityRisk = '15-20%';
+      riskLevel = 'Moderate';
+      warnings.push({ 
+        message: 'Moderate mortality risk (SOFA 7-9)', 
+        severity: 'warning',
+        details: 'Monitor closely for deterioration'
+      });
+    } else if (total <= 12) {
+      mortalityRisk = '40-50%';
+      riskLevel = 'High';
+      warnings.push({ 
+        message: 'High mortality risk (SOFA 10-12)', 
+        severity: 'warning',
+        details: 'Consider ICU care and aggressive management'
+      });
+    } else if (total <= 14) {
+      mortalityRisk = '50-60%';
+      riskLevel = 'Very High';
+      warnings.push({ 
+        message: 'Very high mortality risk (SOFA 13-14)', 
+        severity: 'critical',
+        details: 'Requires immediate intensive care intervention'
+      });
+    } else {
+      mortalityRisk = '>80%';
+      riskLevel = 'Critical';
+      warnings.push({ 
+        message: 'Critical mortality risk (SOFA ≥15)', 
+        severity: 'critical',
+        details: 'Consider goals of care discussion'
+      });
+    }
+    
+    interpretation += `⚠️ Mortality Risk: ${mortalityRisk} (${riskLevel})\n\n`;
+    
+    // Organ-specific breakdown
+    interpretation += '📋 Organ System Scores:\n';
+    interpretation += `• Respiratory (P/F ratio): ${respVal}/4\n`;
+    interpretation += `• Coagulation (Platelets): ${coagVal}/4\n`;
+    interpretation += `• Liver (Bilirubin): ${liverVal}/4\n`;
+    interpretation += `• Cardiovascular (MAP/Pressors): ${cardioVal}/4\n`;
+    interpretation += `• Neurological (GCS): ${neuroVal}/4\n`;
+    interpretation += `• Renal (Creatinine/UOP): ${renalVal}/4\n\n`;
+    
+    // Trending recommendation
+    interpretation += '📈 Clinical Use:\n';
+    interpretation += '• Calculate daily to track trends\n';
+    interpretation += '• Increasing scores indicate worsening\n';
+    interpretation += '• Use for prognostication and resource allocation\n';
+    interpretation += '• Consider in conjunction with clinical judgment\n\n';
+    
+    // Sepsis definition note
+    if (total >= 2) {
+      interpretation += '🦠 Sepsis Note:\n';
+      interpretation += 'SOFA ≥2 meets sepsis criteria when combined with\n';
+      interpretation += 'suspected or confirmed infection (Sepsis-3 definition)';
+    }
+    
+    return interpretation;
+  };
+
+  const calculateBMI = (inputs, warnings) => {
+    const { weight, height } = inputs;
+    
+    if (!weight || !height) return 'Missing required values';
+    
+    const weightVal = parseFloat(weight);
+    const heightVal = parseFloat(height);
+    
+    if (heightVal <= 0) return 'Invalid height value';
+    
+    const heightM = heightVal / 100;
+    const bmi = weightVal / (heightM * heightM);
+    
+    let category = '';
+    let healthRisk = '';
+    
+    if (bmi < 16) {
+      category = 'Severe Underweight';
+      healthRisk = 'High';
+      warnings.push({ 
+        message: 'Severe underweight (BMI < 16)', 
+        severity: 'critical',
+        details: 'Malnutrition risk - consider nutritional intervention'
+      });
+    } else if (bmi < 17) {
+      category = 'Moderate Underweight';
+      healthRisk = 'Moderate';
+      warnings.push({ 
+        message: 'Moderate underweight (BMI < 17)', 
+        severity: 'warning',
+        details: 'Nutritional assessment recommended'
+      });
+    } else if (bmi < 18.5) {
+      category = 'Mild Underweight';
+      healthRisk = 'Low';
+      warnings.push({ 
+        message: 'Mild underweight (BMI < 18.5)', 
+        severity: 'info',
+        details: 'Monitor nutritional status'
+      });
+    } else if (bmi < 25) {
+      category = 'Normal Weight';
+      healthRisk = 'Minimal';
+    } else if (bmi < 30) {
+      category = 'Overweight';
+      healthRisk = 'Low-Moderate';
+      warnings.push({ 
+        message: 'Overweight (BMI 25-29.9)', 
+        severity: 'info',
+        details: 'Lifestyle modifications recommended'
+      });
+    } else if (bmi < 35) {
+      category = 'Obesity Class I';
+      healthRisk = 'Moderate';
+      warnings.push({ 
+        message: 'Obesity Class I (BMI 30-34.9)', 
+        severity: 'warning',
+        details: 'Increased risk of comorbidities'
+      });
+    } else if (bmi < 40) {
+      category = 'Obesity Class II';
+      healthRisk = 'High';
+      warnings.push({ 
+        message: 'Obesity Class II (BMI 35-39.9)', 
+        severity: 'warning',
+        details: 'Significant health risks - consider intervention'
+      });
+    } else {
+      category = 'Obesity Class III';
+      healthRisk = 'Very High';
+      warnings.push({ 
+        message: 'Obesity Class III (BMI ≥40)', 
+        severity: 'critical',
+        details: 'Severe obesity - increased surgical/anesthetic risks'
+      });
+    }
+    
+    // Calculate ideal body weight (Devine formula)
+    const idealWeightMale = 50 + 2.3 * ((heightVal - 152.4) / 2.54);
+    const idealWeightFemale = 45.5 + 2.3 * ((heightVal - 152.4) / 2.54);
+    
+    return `⚖️ BMI Assessment:\n\n` +
+           `📊 Results:\n` +
+           `• BMI: ${formatNumber(bmi, 1)} kg/m²\n` +
+           `• Classification: ${category}\n` +
+           `• Health Risk: ${healthRisk}\n\n` +
+           `📋 Measurements:\n` +
+           `• Weight: ${weightVal} kg\n` +
+           `• Height: ${heightVal} cm (${formatNumber(heightM, 2)} m)\n\n` +
+           `🎯 Ideal Body Weight (Devine Formula):\n` +
+           `• Male: ${formatNumber(Math.max(idealWeightMale, 45), 1)} kg\n` +
+           `• Female: ${formatNumber(Math.max(idealWeightFemale, 45), 1)} kg\n\n` +
+           `📈 BMI Categories:\n` +
+           `• Underweight: <18.5\n` +
+           `• Normal: 18.5-24.9\n` +
+           `• Overweight: 25.0-29.9\n` +
+           `• Obese I: 30.0-34.9\n` +
+           `• Obese II: 35.0-39.9\n` +
+           `• Obese III: ≥40.0`;
+  };
+
+  const calculateGlucose = (inputs, warnings) => {
+    const { weight, currentGlucose, targetGlucose } = inputs;
+    
+    if (!weight || !currentGlucose || !targetGlucose) return 'Missing required values';
+    
+    const weightVal = parseFloat(weight);
+    const currentVal = parseFloat(currentGlucose);
+    const targetVal = parseFloat(targetGlucose);
+    
+    // Critical hypoglycemia check
+    if (currentVal < 54) {
+      warnings.push({ 
+        message: 'Severe hypoglycemia (Glucose < 54 mg/dL)', 
+        severity: 'critical',
+        details: 'Immediate treatment required - 15-20g glucose'
+      });
+      
+      return `🚨 CRITICAL HYPOGLYCEMIA 🚨\n\n` +
+             `Current glucose: ${currentVal} mg/dL\n\n` +
+             `IMMEDIATE TREATMENT:\n` +
+             `• Give 15-20g glucose (3-4 glucose tablets)\n` +
+             `• Or 4-6oz fruit juice\n` +
+             `• Or 1 tube glucose gel\n` +
+             `• Recheck in 15 minutes\n` +
+             `• Repeat if still <70 mg/dL\n\n` +
+             `⚠️ If unconscious: IV dextrose or IM glucagon`;
+    }
+    
+    if (currentVal < 70) {
+      warnings.push({ 
+        message: 'Hypoglycemia (Glucose < 70 mg/dL)', 
+        severity: 'warning',
+        details: 'Treat with 15g glucose and recheck in 15 minutes'
+      });
+    }
+    
+    if (currentVal > 400) {
+      warnings.push({ 
+        message: 'Severe hyperglycemia (Glucose > 400 mg/dL)', 
+        severity: 'critical',
+        details: 'Risk of DKA/HHS - check ketones, electrolytes'
+      });
+    }
+    
+    if (currentVal <= targetVal) {
+      return `Current glucose (${currentVal} mg/dL) is at or below target (${targetVal} mg/dL).\nNo insulin correction needed.`;
+    }
+    
+    // Insulin calculation using correction factor
+    const glucoseDifference = currentVal - targetVal;
+    
+    // Standard correction factors (mg/dL per unit of insulin)
+    const correctionFactor = weightVal > 70 ? 30 : 50; // More sensitive for smaller patients
+    const insulinUnits = glucoseDifference / correctionFactor;
+    
+    // Safety checks
+    if (insulinUnits > 15) {
+      warnings.push({ 
+        message: 'High insulin dose calculated (>15 units)', 
+        severity: 'warning',
+        details: 'Consider dividing dose or reassessing correction factor'
+      });
+    }
+    
+    if (currentVal > 300 && insulinUnits < 5) {
+      warnings.push({ 
+        message: 'Large glucose elevation with small insulin dose', 
+        severity: 'info',
+        details: 'Consider insulin resistance or recalculate correction factor'
+      });
+    }
+    
+    // Sliding scale recommendations
+    let slidingScale = '';
+    if (currentVal >= 150 && currentVal < 200) slidingScale = '2-4 units';
+    else if (currentVal >= 200 && currentVal < 250) slidingScale = '4-6 units';
+    else if (currentVal >= 250 && currentVal < 300) slidingScale = '6-8 units';
+    else if (currentVal >= 300 && currentVal < 350) slidingScale = '8-10 units';
+    else if (currentVal >= 350) slidingScale = '10-15 units';
+    
+    return `💉 Insulin Dosing Calculation:\n\n` +
+           `📊 Current Status:\n` +
+           `• Current glucose: ${currentVal} mg/dL\n` +
+           `• Target glucose: ${targetVal} mg/dL\n` +
+           `• Difference: ${formatNumber(glucoseDifference)} mg/dL\n\n` +
+           `🧮 Correction Calculation:\n` +
+           `• Correction factor: ${correctionFactor} mg/dL per unit\n` +
+           `• Calculated insulin: ${formatNumber(insulinUnits, 1)} units\n\n` +
+           `📋 Sliding Scale Reference:\n` +
+           `• 150-199 mg/dL: 2-4 units\n` +
+           `• 200-249 mg/dL: 4-6 units\n` +
+           `• 250-299 mg/dL: 6-8 units\n` +
+           `• 300-349 mg/dL: 8-10 units\n` +
+           `• ≥350 mg/dL: 10-15 units\n\n` +
+           `📋 Current recommendation: ${slidingScale}\n\n` +
+           '⚠️ Safety Guidelines:\n' +
+           '• Recheck glucose in 2-4 hours\n' +
+           '• Hold if patient NPO >4 hours\n' +
+           '• Adjust for renal impairment\n' +
+           '• Consider continuous insulin if glucose >300\n' +
+           '• Monitor for hypoglycemia symptoms';
+  };
+
+  // Main calculation function with error handling
+  const calculate = useCallback(() => {
+    try {
+      const inputs = calculatorInputs[activeTab];
+      if (!inputs) return 'No inputs available';
+      
+      let result = '';
+      let newWarnings = [];
+      
+      switch (activeTab) {
+        case 'abg':
+          result = calculateABG(inputs, newWarnings);
+          break;
+        case 'sodium':
+          result = calculateSodiumBicarbonate(inputs, newWarnings);
+          break;
+        case 'potassium':
+          result = calculatePotassium(inputs, newWarnings);
+          break;
+        case 'ivDrip':
+          result = calculateIVDrip(inputs, newWarnings);
+          break;
+        case 'fluid':
+          result = calculateFluids(inputs, newWarnings);
+          break;
+        case 'drug':
+          result = calculateDrugDosing(inputs, newWarnings);
+          break;
+        case 'sofa':
+          result = calculateSOFA(inputs, newWarnings);
+          break;
+        case 'bmi':
+          result = calculateBMI(inputs, newWarnings);
+          break;
+        case 'glucose':
+          result = calculateGlucose(inputs, newWarnings);
+          break;
+        default:
+          result = 'Select a calculator to begin';
+      }
+      
+      setWarnings(newWarnings);
+      
+      // Add to history only if valid result and no critical errors
+      if (result && result !== 'Select a calculator to begin' && 
+          !newWarnings.some(w => w.severity === 'critical')) {
+        const timestamp = new Date().toLocaleString();
+        const calculatorName = calculators.find(c => c.id === activeTab)?.name || activeTab;
+        
+        setCalculationHistory(prev => [
+          {
+            id: Date.now(),
+            calculator: activeTab,
+            calculatorName,
+            inputs: { ...inputs },
+            result,
+            timestamp
+          },
+          ...prev.slice(0, 9) // Keep last 10
+        ]);
+      }
+      
+      setResult(result);
+      return result;
+    } catch (error) {
+      console.error('Calculation error:', error);
+      const errorWarning = {
+        message: 'Calculation error occurred',
+        severity: 'critical',
+        details: 'Please check your inputs and try again'
+      };
+      setWarnings([errorWarning]);
+      setResult('Error in calculation');
+      return 'Error in calculation';
+    }
+  }, [calculatorInputs, activeTab, calculators]);
+
+  // Toggle favorite
+  const toggleFavorite = useCallback((calculatorId) => {
+    setFavorites(prev => 
+      prev.includes(calculatorId) 
+        ? prev.filter(id => id !== calculatorId)
+        : [...prev, calculatorId]
+    );
+  }, []);
+
+  // Clear history
+  const clearHistory = useCallback(() => {
+    setCalculationHistory([]);
+  }, []);
+
+  return (
+    <div className={`min-h-screen transition-colors duration-300 ${
+      darkMode 
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+        : 'bg-gradient-to-br from-blue-50 via-white to-indigo-50'
+    }`}>
+      {/* Header */}
+      <header className={`sticky top-0 z-50 border-b transition-colors duration-300 ${
+        darkMode 
+          ? 'bg-gray-800/95 border-gray-700 backdrop-blur-sm' 
+          : 'bg-white/95 border-gray-200 backdrop-blur-sm'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo and Title */}
+            <div className="flex items-center space-x-3">
+              <div className={`p-2 rounded-lg ${
+                darkMode ? 'bg-blue-600' : 'bg-blue-600'
+              }`}>
+                <HeartPulse className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className={`text-xl font-bold ${
+                  darkMode ? 'text-white' : 'text-gray-900'
+                }`}>
+                  MedCalc Pro
+                </h1>
+                <p className={`text-sm ${
+                  darkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>
+                  Clinical Calculator Suite
+                </p>
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="flex-1 max-w-md mx-8">
+              <div className="relative">
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                }`} />
+                <input
+                  type="text"
+                  placeholder="Search calculators..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`w-full pl-10 pr-4 py-2 rounded-lg border transition-colors ${
+                    darkMode 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500'
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center space-x-3">
+              {/* History Toggle */}
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className={`p-2 rounded-lg transition-colors ${
+                  showHistory
+                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+                }`}
+                title="Calculation History"
+              >
+                <History className="w-5 h-5" />
+              </button>
+
+              {/* Dark Mode Toggle */}
+              <button
+                onClick={toggleDarkMode}
+                className={`p-2 rounded-lg transition-colors ${
+                  darkMode 
+                    ? 'hover:bg-gray-700 text-yellow-400' 
+                    : 'hover:bg-gray-100 text-gray-600'
+                }`}
+                title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Calculator Selection */}
+          <div className="lg:col-span-2">
+            <div className={`rounded-xl shadow-lg transition-colors duration-300 ${
+              darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+            }`}>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className={`text-2xl font-bold ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    Medical Calculators
+                  </h2>
+                  
+                  {favorites.length > 0 && (
+                    <div className="flex items-center space-x-2">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      <span className={`text-sm ${
+                        darkMode ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
+                        {favorites.length} favorites
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <CalculatorGrid
+                  calculators={calculators}
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  favorites={favorites}
+                  onToggleFavorite={toggleFavorite}
+                  searchQuery={searchQuery}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Calculator Form and Results */}
+          <div className="space-y-6">
+            {/* Current Calculator */}
+            {activeTab && (
+              <div className={`rounded-xl shadow-lg transition-colors duration-300 ${
+                darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+              }`}>
+                <div className="p-6">
+                  <div className="flex items-center space-x-3 mb-6">
+                    {(() => {
+                      const CurrentIcon = calculators.find(c => c.id === activeTab)?.icon || Activity;
+                      return <CurrentIcon className={`w-6 h-6 ${
+                        darkMode ? 'text-blue-400' : 'text-blue-600'
+                      }`} />;
+                    })()}
+                    <h3 className={`text-xl font-semibold ${
+                      darkMode ? 'text-white' : 'text-gray-900'
+                    }`}>
+                      {calculators.find(c => c.id === activeTab)?.name || 'Calculator'}
+                    </h3>
+                  </div>
+
+                  <CalculatorForm
+                    activeTab={activeTab}
+                    inputs={calculatorInputs[activeTab] || {}}
+                    onInputChange={handleInputChange}
+                    onCalculate={calculate}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Warnings */}
+            <WarningDisplay warnings={warnings} />
+
+            {/* Results */}
+            {result && (
+              <div className={`rounded-xl shadow-lg transition-colors duration-300 ${
+                darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+              }`}>
+                <div className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <CheckCircle2 className="w-6 h-6 text-green-500" />
+                    <h3 className={`text-xl font-semibold ${
+                      darkMode ? 'text-white' : 'text-gray-900'
+                    }`}>
+                      Results
+                    </h3>
+                  </div>
+                  
+                  <div className={`p-4 rounded-lg font-mono text-sm whitespace-pre-line ${
+                    darkMode 
+                      ? 'bg-gray-900 text-gray-100 border border-gray-600' 
+                      : 'bg-gray-50 text-gray-800 border border-gray-200'
+                  }`}>
+                    {result}
+                  </div>
+                  
+                  <div className="mt-4 flex space-x-3">
+                    <button
+                      onClick={() => navigator.clipboard?.writeText(result)}
+                      className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        darkMode 
+                          ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>Copy</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => setResult('')}
+                      className={`flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        darkMode 
+                          ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      <span>Clear</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* History Panel */}
+            {showHistory && (
+              <div className={`rounded-xl shadow-lg transition-colors duration-300 ${
+                darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+              }`}>
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <History className={`w-6 h-6 ${
+                        darkMode ? 'text-blue-400' : 'text-blue-600'
+                      }`} />
+                      <h3 className={`text-xl font-semibold ${
+                        darkMode ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        Calculation History
+                      </h3>
+                    </div>
+                    
+                    {calculationHistory.length > 0 && (
+                      <button
+                        onClick={clearHistory}
+                        className={`text-sm font-medium px-3 py-1 rounded-lg transition-colors ${
+                          darkMode 
+                            ? 'text-red-400 hover:bg-red-900/20' 
+                            : 'text-red-600 hover:bg-red-50'
+                        }`}
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {calculationHistory.length === 0 ? (
+                      <p className={`text-center py-8 ${
+                        darkMode ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
+                        No calculations yet
+                      </p>
+                    ) : (
+                      calculationHistory.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`p-3 rounded-lg border transition-colors cursor-pointer hover:shadow-md ${
+                            darkMode 
+                              ? 'bg-gray-700 border-gray-600 hover:bg-gray-600' 
+                              : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                          }`}
+                          onClick={() => {
+                            setActiveTab(item.calculator);
+                            setResult(item.result);
+                          }}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className={`font-medium ${
+                              darkMode ? 'text-white' : 'text-gray-900'
+                            }`}>
+                              {item.calculatorName}
+                            </span>
+                            <span className={`text-xs ${
+                              darkMode ? 'text-gray-400' : 'text-gray-500'
+                            }`}>
+                              {item.timestamp}
+                            </span>
+                          </div>
+                          <p className={`text-sm line-clamp-2 ${
+                            darkMode ? 'text-gray-300' : 'text-gray-600'
+                          }`}>
+                            {item.result.split('\n')[0]}...
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className={`mt-16 border-t ${
+        darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <p className={`text-sm ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              ⚠️ For educational purposes only. Always verify calculations and consult clinical guidelines.
+            </p>
+            <p className={`text-xs mt-2 ${
+              darkMode ? 'text-gray-500' : 'text-gray-500'
+            }`}>
+              MedCalc Pro © 2024 - Clinical Calculator Suite
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
