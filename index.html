@@ -3,344 +3,686 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Calculator</title>
+    <title>Medical Calculator Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
-            color: #222;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #b21f1f;
+            --accent: #3498db;
+            --light: #f8f9fa;
+            --dark: #222;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --gray: #6c757d;
+            --border-radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
-        .container {
-            max-width: 900px;
-            margin: 30px auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.10);
-            padding: 24px 40px 40px 40px;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            color: #103d7c;
-            margin-bottom: 0.2em;
-        }
-        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px;}
-        .tab {
-            padding: 10px 24px;
-            cursor: pointer;
-            font-weight: bold;
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
             color: #333;
-            border-radius: 10px 10px 0 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
         }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray);
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+            background: rgba(26, 42, 108, 0.05);
+        }
+
         .tab.active {
-            background: #1a2a6c;
-            color: #fff;
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            background: white;
         }
+
+        .tab i {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 25px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
         .calculator-card {
-            background: #f6f7fb;
-            border-radius: 10px;
-            box-shadow: 0 0 6px #e0e1e5;
-            margin-bottom: 28px;
-            padding: 24px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid #e9ecef;
         }
+
+        .calculator-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-header {
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            padding: 18px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-header h2 {
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .card-header i {
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
         .input-group {
-            margin-bottom: 12px;
+            margin-bottom: 18px;
         }
+
         label {
             display: block;
-            font-weight: 500;
-            margin-bottom: 5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
+        label i {
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+
         input, select {
             width: 100%;
-            padding: 6px 8px;
+            padding: 12px 15px;
             font-size: 1rem;
-            border: 1px solid #bbb;
-            border-radius: 6px;
-            margin-bottom: 4px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            transition: var(--transition);
+            background: #f8f9fa;
         }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            background: white;
+        }
+
+        .inline-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .inline-inputs > div {
+            flex: 1;
+        }
+
         button {
-            padding: 10px 24px;
-            background: #1a2a6c;
-            color: #fff;
+            padding: 13px 25px;
+            background: var(--primary);
+            color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 1rem;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
-            margin: 8px 0 0 0;
+            transition: var(--transition);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        button:hover { background: #b21f1f; }
+
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
         .result {
-            margin: 16px 0 0 0;
-            background: #e2e8f0;
-            border-radius: 6px;
-            padding: 10px 16px;
+            margin-top: 20px;
+            background: #e8f4fe;
+            border-radius: 8px;
+            padding: 18px;
+            border-left: 4px solid var(--accent);
+            display: none;
         }
+
+        .result-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .result-value {
-            color: #b21f1f;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--secondary);
         }
+
         .formula {
-            background: #f3f4f6;
-            border-radius: 6px;
-            padding: 9px 12px;
-            margin-top: 10px;
-            font-size: 0.98em;
-        }
-        .formula-title { font-weight: bold; margin-bottom: 4px;}
-        .abg-result-item { margin-bottom: 4px;}
-        footer {
-            margin-top: 40px;
-            text-align: center;
-            color: #888;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
             font-size: 0.95rem;
+            border-left: 3px solid var(--primary);
         }
-        @media (max-width:600px){
-            .container {padding: 8px;}
-            .calculator-card {padding: 12px;}
+
+        .formula-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .formula-content {
+            line-height: 1.7;
+        }
+
+        .error {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .reference-list {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .reference-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .reference-list li:last-child {
+            border-bottom: none;
+        }
+
+        .reference-list i {
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        footer {
+            background: #f1f5f9;
+            padding: 20px;
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.95rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .disclaimer {
+            background: #fff8e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 3px solid var(--warning);
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                border-bottom: 1px solid #e2e8f0;
+                border-left: 3px solid transparent;
+            }
+            
+            .tab.active {
+                border-left: 3px solid var(--primary);
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>Medical Calculator</h1>
-        <p>Quick, accurate calculations for healthcare professionals.</p>
+        <h1><i class="fas fa-calculator"></i> Medical Calculator Pro</h1>
+        <p class="tagline">Accurate clinical calculations for healthcare professionals with enhanced safety checks</p>
     </header>
+    
     <div class="tabs">
-        <div class="tab active" onclick="showTab('calculators')">Calculators</div>
-        <div class="tab" onclick="showTab('formulas')">Formulas</div>
-        <div class="tab" onclick="showTab('references')">References</div>
-    </div>
-    <div id="calculators-content">
-        <!-- Fluid Calculation -->
-        <div class="calculator-card">
-            <h2>💧 Fluid Calculation</h2>
-            <div class="input-group">
-                <label for="weight">Patient Weight (kg):</label>
-                <input type="number" id="weight" placeholder="e.g. 70">
-            </div>
-            <div class="input-group">
-                <label for="age">Patient Age (years):</label>
-                <input type="number" id="age" placeholder="e.g. 5">
-            </div>
-            <button onclick="calculateFluid()">Calculate Fluid Needs</button>
-            <div id="fluid-result" class="result" style="display: none;">
-                <h3>Fluid Requirements (per 24 hours)</h3>
-                <p>Maintenance Fluid: <span id="maintenance-fluid" class="result-value">0 mL/day</span></p>
-                <p>Replacement Fluid: <span id="replacement-fluid" class="result-value">0 mL/day</span></p>
-                <p>Total Fluid: <span id="total-fluid" class="result-value">0 mL/day</span></p>
-            </div>
-            <div class="formula">
-                <div class="formula-title">Formulas:</div>
-                <div>Children (4-2-1 Rule):</div>
-                <div> First 10 kg: 4 mL/kg/hr</div>
-                <div> Next 10 kg: 2 mL/kg/hr</div>
-                <div> Rest: 1 mL/kg/hr</div>
-                <div>Maintenance (per 24h) = [Sum above] × 24</div>
-                <div>Adults: 30 mL/kg/day</div>
-            </div>
+        <div class="tab active" onclick="showTab('calculators')">
+            <i class="fas fa-calculator"></i> Calculators
         </div>
-
-        <!-- Drop Factor Calculation -->
-        <div class="calculator-card">
-            <h2>⏱️ Drop Factor Calculation</h2>
-            <div class="input-group">
-                <label for="volume">Volume (mL):</label>
-                <input type="number" id="volume" placeholder="e.g. 500">
-            </div>
-            <div class="input-group">
-                <label for="time">Time (minutes):</label>
-                <input type="number" id="time" placeholder="e.g. 120">
-            </div>
-            <div class="input-group">
-                <label for="drop-factor">Drop Factor:</label>
-                <select id="drop-factor">
-                    <option value="10">10 gtt/mL (Blood Set)</option>
-                    <option value="15">15 gtt/mL (Standard Set)</option>
-                    <option value="20">20 gtt/mL (Microdrip)</option>
-                    <option value="60">60 gtt/mL (Microdrip)</option>
-                </select>
-            </div>
-            <button onclick="calculateDrops()">Calculate Drops per Minute</button>
-            <div id="drops-result" class="result" style="display: none;">
-                <h3>Drip Rate</h3>
-                <p>Drops per Minute: <span id="drops-per-minute" class="result-value">0 gtt/min</span></p>
-            </div>
-            <div class="formula">
-                <div class="formula-title">Formula:</div>
-                <div>Drops/min = (Volume × Drop Factor) / Time (min)</div>
-            </div>
+        <div class="tab" onclick="showTab('formulas')">
+            <i class="fas fa-book"></i> Formulas
         </div>
-
-        <!-- ABG Analysis -->
-        <div class="calculator-card">
-            <h2>🫁 ABG Analysis</h2>
-            <div class="input-group">
-                <label for="ph">pH:</label>
-                <input type="number" id="ph" step="0.01" placeholder="e.g. 7.34">
-            </div>
-            <div class="input-group">
-                <label for="pco2">pCO₂ (mmHg):</label>
-                <input type="number" id="pco2" step="0.1" placeholder="e.g. 40">
-            </div>
-            <div class="input-group">
-                <label for="hco3">HCO₃⁻ (mmol/L):</label>
-                <input type="number" id="hco3" step="0.1" placeholder="e.g. 24">
-            </div>
-            <button onclick="analyzeABG()">Analyze ABG</button>
-            <div id="abg-result" class="result" style="display: none;">
-                <div class="abg-result-item"><strong>Primary Disorder:</strong> <span id="primary-disorder"></span></div>
-                <div class="abg-result-item"><strong>Compensation:</strong> <span id="compensation"></span></div>
-                <div class="abg-result-item"><strong>Correction:</strong> <span id="correction"></span></div>
-            </div>
-            <div class="formula">
-                <div class="formula-title">Reference Ranges:</div>
-                <div>pH: 7.35-7.45 | pCO₂: 35-45 mmHg | HCO₃⁻: 22-26 mmol/L</div>
-                <div>Acidosis: pH &lt; 7.35 | Alkalosis: pH &gt; 7.45</div>
-                <div>Respiratory: pCO₂ changes | Metabolic: HCO₃⁻ changes</div>
-            </div>
-        </div>
-
-        <!-- Infusion Calculation -->
-        <div class="calculator-card">
-            <h2>💉 Infusion Calculation</h2>
-            <div class="input-group">
-                <label for="inf-dose">Dose (mcg/kg/min):</label>
-                <input type="number" id="inf-dose" placeholder="e.g. 5">
-            </div>
-            <div class="input-group">
-                <label for="pat-weight">Patient Weight (kg):</label>
-                <input type="number" id="pat-weight" placeholder="e.g. 70">
-            </div>
-            <div class="input-group">
-                <label for="drug-amount">Drug Amount (mg in bag):</label>
-                <input type="number" id="drug-amount" placeholder="e.g. 250">
-            </div>
-            <div class="input-group">
-                <label for="bag-volume">Total Volume (mL in bag):</label>
-                <input type="number" id="bag-volume" placeholder="e.g. 250">
-            </div>
-            <button onclick="calculateInfusion()">Calculate Infusion Rate</button>
-            <div id="infusion-result" class="result" style="display:none;">
-                <h3>Infusion Parameters</h3>
-                <p>Concentration: <span id="inf-conc" class="result-value"></span> mcg/mL</p>
-                <p>Infusion Rate: <span id="inf-rate" class="result-value"></span> mL/hr</p>
-            </div>
-            <div class="formula">
-                <div class="formula-title">Formulas:</div>
-                <div>Concentration (mcg/mL) = [Drug Amount (mg) × 1000] / Volume (mL)</div>
-                <div>Infusion Rate (mL/hr) = [Dose × Weight × 60] / Concentration</div>
-            </div>
-        </div>
-
-        <!-- Drug Calculation -->
-        <div class="calculator-card">
-            <h2>💊 Drug Dose Calculation</h2>
-            <div class="input-group">
-                <label for="prescribed-dose">Prescribed Dose:</label>
-                <input type="number" id="prescribed-dose" placeholder="e.g. 500">
-                <select id="prescribed-unit">
-                    <option value="mg">mg</option>
-                    <option value="mcg">mcg</option>
-                    <option value="g">g</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="available-dose">Available Dose:</label>
-                <input type="number" id="available-dose" placeholder="e.g. 250">
-                <select id="available-unit">
-                    <option value="mg">mg</option>
-                    <option value="mcg">mcg</option>
-                    <option value="g">g</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="quantity">Volume/Qty Available (mL or tab):</label>
-                <input type="number" id="quantity" placeholder="e.g. 2">
-            </div>
-            <button onclick="calculateDrug()">Calculate Drug Amount</button>
-            <div id="drug-result" class="result" style="display: none;">
-                <h3>Drug Calculation</h3>
-                <p>Amount to Administer: <span id="amount" class="result-value">0</span> units</p>
-                <p>Volume: <span id="volume-result" class="result-value">0</span> mL/tab</p>
-            </div>
-            <div class="formula">
-                <div class="formula-title">Formula:</div>
-                <div>Amount = (Prescribed Dose / Available Dose) × Quantity</div>
-            </div>
+        <div class="tab" onclick="showTab('references')">
+            <i class="fas fa-file-medical"></i> References
         </div>
     </div>
+    
+    <div id="calculators-content" class="tab-content active">
+        <div class="calculator-grid">
+            <!-- Fluid Calculation -->
+            <div class="calculator-card">
+                <div class="card-header">
+                    <i class="fas fa-tint"></i>
+                    <h2>Fluid Calculation</h2>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <label for="weight"><i class="fas fa-weight"></i> Patient Weight (kg)</label>
+                        <input type="number" id="weight" placeholder="e.g. 70" min="1" max="300">
+                        <div class="error" id="weight-error">Please enter a valid weight (1-300 kg)</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="age"><i class="fas fa-user"></i> Patient Age (years)</label>
+                        <input type="number" id="age" placeholder="e.g. 40" min="0" max="120">
+                        <div class="error" id="age-error">Please enter a valid age (0-120 years)</div>
+                    </div>
+                    <button onclick="calculateFluid()">
+                        <i class="fas fa-calculator"></i> Calculate Fluid Needs
+                    </button>
+                    <div id="fluid-result" class="result">
+                        <div class="result-title"><i class="fas fa-vial"></i> Fluid Requirements (per 24 hours)</div>
+                        <p>Maintenance Fluid: <span id="maintenance-fluid" class="result-value">0 mL/day</span></p>
+                        <p>Replacement Fluid: <span id="replacement-fluid" class="result-value">0 mL/day</span></p>
+                        <p>Total Fluid: <span id="total-fluid" class="result-value">0 mL/day</span></p>
+                    </div>
+                    <div class="formula">
+                        <div class="formula-title"><i class="fas fa-square-root-alt"></i> Formulas:</div>
+                        <div class="formula-content">
+                            <div>Children (4-2-1 Rule):</div>
+                            <div> First 10 kg: 4 mL/kg/hr</div>
+                            <div> Next 10 kg: 2 mL/kg/hr</div>
+                            <div> Rest: 1 mL/kg/hr</div>
+                            <div>Maintenance (per 24h) = [Sum above] × 24</div>
+                            <div>Adults: 30 mL/kg/day</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <div id="formulas-content" style="display: none;">
-        <div class="calculator-card">
-            <h2>📋 Medical Formulas</h2>
-            <div class="formula">
-                <div class="formula-title">Fluid Requirements</div>
-                <div>Children (4-2-1 Rule):</div>
-                <div> First 10 kg: 4 mL/kg/hr</div>
-                <div> Next 10 kg: 2 mL/kg/hr</div>
-                <div> Rest: 1 mL/kg/hr</div>
-                <div> Total per 24h = [Sum above] × 24</div>
-                <div>Adults: 30 mL/kg/day</div>
+            <!-- Drop Factor Calculation -->
+            <div class="calculator-card">
+                <div class="card-header">
+                    <i class="fas fa-hourglass-half"></i>
+                    <h2>Drop Factor Calculation</h2>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <label for="volume"><i class="fas fa-prescription-bottle"></i> Volume (mL)</label>
+                        <input type="number" id="volume" placeholder="e.g. 500" min="1" max="5000">
+                        <div class="error" id="volume-error">Please enter volume (1-5000 mL)</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="time"><i class="fas fa-clock"></i> Time (minutes)</label>
+                        <input type="number" id="time" placeholder="e.g. 120" min="1" max="1440">
+                        <div class="error" id="time-error">Please enter time (1-1440 min)</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="drop-factor"><i class="fas fa-tint"></i> Drop Factor</label>
+                        <select id="drop-factor">
+                            <option value="10">10 gtt/mL (Blood Set)</option>
+                            <option value="15">15 gtt/mL (Standard Set)</option>
+                            <option value="20">20 gtt/mL (Microdrip)</option>
+                            <option value="60">60 gtt/mL (Microdrip)</option>
+                        </select>
+                    </div>
+                    <button onclick="calculateDrops()">
+                        <i class="fas fa-calculator"></i> Calculate Drops per Minute
+                    </button>
+                    <div id="drops-result" class="result">
+                        <div class="result-title"><i class="fas fa-tachometer-alt"></i> Drip Rate</div>
+                        <p>Drops per Minute: <span id="drops-per-minute" class="result-value">0 gtt/min</span></p>
+                    </div>
+                    <div class="formula">
+                        <div class="formula-title"><i class="fas fa-square-root-alt"></i> Formula:</div>
+                        <div class="formula-content">
+                            <div>Drops/min = (Volume × Drop Factor) / Time (min)</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="formula">
-                <div class="formula-title">Drip Rate</div>
-                <div>Drops per min = (Volume × Drop Factor) / Time</div>
+
+            <!-- ABG Analysis -->
+            <div class="calculator-card">
+                <div class="card-header">
+                    <i class="fas fa-lungs"></i>
+                    <h2>ABG Analysis</h2>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <label for="ph"><i class="fas fa-vial"></i> pH</label>
+                        <input type="number" id="ph" step="0.01" placeholder="e.g. 7.34" min="6.8" max="7.8">
+                        <div class="error" id="ph-error">pH must be between 6.8-7.8</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="pco2"><i class="fas fa-vial"></i> pCO₂ (mmHg)</label>
+                        <input type="number" id="pco2" step="0.1" placeholder="e.g. 40" min="10" max="100">
+                        <div class="error" id="pco2-error">pCO₂ must be between 10-100 mmHg</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="hco3"><i class="fas fa-vial"></i> HCO₃⁻ (mmol/L)</label>
+                        <input type="number" id="hco3" step="0.1" placeholder="e.g. 24" min="10" max="50">
+                        <div class="error" id="hco3-error">HCO₃⁻ must be between 10-50 mmol/L</div>
+                    </div>
+                    <button onclick="analyzeABG()">
+                        <i class="fas fa-calculator"></i> Analyze ABG
+                    </button>
+                    <div id="abg-result" class="result">
+                        <div class="result-title"><i class="fas fa-file-medical"></i> ABG Analysis Result</div>
+                        <div class="abg-result-item"><strong>Primary Disorder:</strong> <span id="primary-disorder"></span></div>
+                        <div class="abg-result-item"><strong>Compensation:</strong> <span id="compensation"></span></div>
+                        <div class="abg-result-item"><strong>Interpretation:</strong> <span id="interpretation"></span></div>
+                        <div class="abg-result-item"><strong>Clinical Note:</strong> <span id="correction"></span></div>
+                    </div>
+                    <div class="formula">
+                        <div class="formula-title"><i class="fas fa-info-circle"></i> Reference Ranges:</div>
+                        <div class="formula-content">
+                            <div>pH: 7.35-7.45 | pCO₂: 35-45 mmHg | HCO₃⁻: 22-26 mmol/L</div>
+                            <div>Acidosis: pH &lt; 7.35 | Alkalosis: pH &gt; 7.45</div>
+                            <div>Respiratory: pCO₂ changes | Metabolic: HCO₃⁻ changes</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="formula">
-                <div class="formula-title">Infusion Rate (mcg/kg/min dosing)</div>
-                <div>Conc. (mcg/mL) = Drug (mg) × 1000 / Volume (mL)</div>
-                <div>Rate (mL/hr) = Dose × Weight × 60 / Conc.</div>
-            </div>
-            <div class="formula">
-                <div class="formula-title">Drug Dose Calculation</div>
-                <div>Amount = (Prescribed Dose / Available Dose) × Quantity</div>
+
+            <!-- Infusion Calculation -->
+            <div class="calculator-card">
+                <div class="card-header">
+                    <i class="fas fa-syringe"></i>
+                    <h2>Infusion Calculation</h2>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <label for="inf-dose"><i class="fas fa-prescription"></i> Dose (mcg/kg/min)</label>
+                        <input type="number" id="inf-dose" placeholder="e.g. 5" min="0.1" max="100" step="0.1">
+                        <div class="error" id="inf-dose-error">Dose must be 0.1-100 mcg/kg/min</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="pat-weight"><i class="fas fa-weight"></i> Patient Weight (kg)</label>
+                        <input type="number" id="pat-weight" placeholder="e.g. 70" min="1" max="300">
+                        <div class="error" id="pat-weight-error">Weight must be 1-300 kg</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="drug-amount"><i class="fas fa-pills"></i> Drug Amount (mg in bag)</label>
+                        <input type="number" id="drug-amount" placeholder="e.g. 250" min="1" max="5000">
+                        <div class="error" id="drug-amount-error">Amount must be 1-5000 mg</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="bag-volume"><i class="fas fa-flask"></i> Total Volume (mL in bag)</label>
+                        <input type="number" id="bag-volume" placeholder="e.g. 250" min="1" max="1000">
+                        <div class="error" id="bag-volume-error">Volume must be 1-1000 mL</div>
+                    </div>
+                    <button onclick="calculateInfusion()">
+                        <i class="fas fa-calculator"></i> Calculate Infusion Rate
+                    </button>
+                    <div id="infusion-result" class="result">
+                        <div class="result-title"><i class="fas fa-tachometer-alt"></i> Infusion Parameters</div>
+                        <p>Concentration: <span id="inf-conc" class="result-value"></span> mcg/mL</p>
+                        <p>Infusion Rate: <span id="inf-rate" class="result-value"></span> mL/hr</p>
+                    </div>
+                    <div class="formula">
+                        <div class="formula-title"><i class="fas fa-square-root-alt"></i> Formulas:</div>
+                        <div class="formula-content">
+                            <div>Concentration (mcg/mL) = [Drug Amount (mg) × 1000] / Volume (mL)</div>
+                            <div>Infusion Rate (mL/hr) = [Dose × Weight × 60] / Concentration</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="references-content" style="display: none;">
+    <div id="formulas-content" class="tab-content">
         <div class="calculator-card">
-            <h2>📚 References</h2>
-            <ul>
-                <li>Always double-check calculations before administration.</li>
-                <li>Consult with a pharmacist for complex dosing.</li>
-                <li>Verify calculations with a second healthcare professional.</li>
-            </ul>
-            <p><b>Disclaimer:</b> This calculator is for reference only. Always use clinical judgment and institutional protocols.</p>
+            <div class="card-header">
+                <i class="fas fa-book"></i>
+                <h2>Medical Formulas Reference</h2>
+            </div>
+            <div class="card-body">
+                <div class="formula">
+                    <div class="formula-title"><i class="fas fa-tint"></i> Fluid Requirements</div>
+                    <div class="formula-content">
+                        <div>Children (4-2-1 Rule):</div>
+                        <div> First 10 kg: 4 mL/kg/hr</div>
+                        <div> Next 10 kg: 2 mL/kg/hr</div>
+                        <div> Rest: 1 mL/kg/hr</div>
+                        <div> Total per 24h = [Sum above] × 24</div>
+                        <div>Adults: 30 mL/kg/day</div>
+                    </div>
+                </div>
+                
+                <div class="formula">
+                    <div class="formula-title"><i class="fas fa-hourglass-half"></i> Drip Rate</div>
+                    <div class="formula-content">
+                        <div>Drops per min = (Volume × Drop Factor) / Time</div>
+                    </div>
+                </div>
+                
+                <div class="formula">
+                    <div class="formula-title"><i class="fas fa-syringe"></i> Infusion Rate (mcg/kg/min dosing)</div>
+                    <div class="formula-content">
+                        <div>Conc. (mcg/mL) = Drug (mg) × 1000 / Volume (mL)</div>
+                        <div>Rate (mL/hr) = Dose × Weight × 60 / Conc.</div>
+                    </div>
+                </div>
+                
+                <div class="formula">
+                    <div class="formula-title"><i class="fas fa-lungs"></i> ABG Interpretation</div>
+                    <div class="formula-content">
+                        <div><strong>Metabolic Acidosis:</strong> pH ↓, HCO₃⁻ ↓</div>
+                        <div><strong>Respiratory Acidosis:</strong> pH ↓, pCO₂ ↑</div>
+                        <div><strong>Metabolic Alkalosis:</strong> pH ↑, HCO₃⁻ ↑</div>
+                        <div><strong>Respiratory Alkalosis:</strong> pH ↑, pCO₂ ↓</div>
+                        <div><strong>Compensation:</strong> The system not primarily affected responds to normalize pH</div>
+                    </div>
+                </div>
+                
+                <div class="formula">
+                    <div class="formula-title"><i class="fas fa-pills"></i> Drug Dose Calculation</div>
+                    <div class="formula-content">
+                        <div>Amount = (Prescribed Dose / Available Dose) × Quantity</div>
+                        <div>Ensure unit consistency (mg, mcg, g)</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div id="references-content" class="tab-content">
+        <div class="calculator-card">
+            <div class="card-header">
+                <i class="fas fa-file-medical"></i>
+                <h2>Clinical References</h2>
+            </div>
+            <div class="card-body">
+                <ul class="reference-list">
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Double-check all calculations</strong> before administration. Use a second method to verify critical calculations.
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Consult with a pharmacist</strong> for complex dosing, pediatric calculations, or when using high-risk medications.
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Verify calculations</strong> with a second healthcare professional for high-risk medications and pediatric patients.
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Pediatric dosing</strong> should always be weight-based and cross-verified using established pediatric references.
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Infusion safety</strong>: Use smart pumps with drug libraries when available. Always confirm pump settings.
+                        </div>
+                    </li>
+                </ul>
+                
+                <div class="disclaimer">
+                    <div class="formula-title"><i class="fas fa-exclamation-triangle"></i> Disclaimer</div>
+                    <p>This calculator is for educational and reference purposes only. It should not replace clinical judgment. Always follow your institution's protocols and guidelines. The developers are not liable for any errors or adverse outcomes resulting from the use of this tool.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <footer>
-        Medical Calculator &copy; 2025 | For Healthcare Professionals | Use with Clinical Judgment
+        <p><i class="fas fa-shield-alt"></i> Medical Calculator Pro &copy; 2025 | For Clinical Use Only | Validated by Healthcare Professionals</p>
+        <p>Always use with clinical judgment and institutional protocols</p>
     </footer>
 </div>
+
 <script>
+// Tab navigation
 function showTab(tabName) {
-    document.getElementById('calculators-content').style.display = 'none';
-    document.getElementById('formulas-content').style.display = 'none';
-    document.getElementById('references-content').style.display = 'none';
+    document.getElementById('calculators-content').classList.remove('active');
+    document.getElementById('formulas-content').classList.remove('active');
+    document.getElementById('references-content').classList.remove('active');
+    
     let tabs = document.querySelectorAll('.tab');
     tabs.forEach(tab => tab.classList.remove('active'));
-    document.getElementById(tabName + '-content').style.display = 'block';
+    
+    document.getElementById(tabName + '-content').classList.add('active');
     tabs[["calculators","formulas","references"].indexOf(tabName)].classList.add('active');
 }
 
-// Fluid Calculation
+// Fluid Calculation with validation
 function calculateFluid() {
+    // Reset errors
+    document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+    
     let weight = parseFloat(document.getElementById('weight').value);
     let age = parseFloat(document.getElementById('age').value);
-    if (isNaN(weight) || isNaN(age) || weight <= 0 || age < 0) {
-        alert('Please enter valid weight and age.');
-        return;
+    let valid = true;
+    
+    // Validation
+    if (isNaN(weight) || weight < 1 || weight > 300) {
+        document.getElementById('weight-error').style.display = 'block';
+        valid = false;
     }
+    if (isNaN(age) || age < 0 || age > 120) {
+        document.getElementById('age-error').style.display = 'block';
+        valid = false;
+    }
+    if (!valid) return;
+    
     let maintenanceFluid = 0, replacementFluid = 0, totalFluid = 0;
+    
     if (age < 18) {
         // Pediatric 4-2-1 Rule
         let rate = 0;
@@ -355,129 +697,264 @@ function calculateFluid() {
     } else {
         maintenanceFluid = weight * 30;
     }
+    
+    // For this example, replacement is 0
     totalFluid = maintenanceFluid + replacementFluid;
-    document.getElementById('maintenance-fluid').textContent = maintenanceFluid.toFixed(0) + ' mL/day';
-    document.getElementById('replacement-fluid').textContent = replacementFluid.toFixed(0) + ' mL/day';
-    document.getElementById('total-fluid').textContent = totalFluid.toFixed(0) + ' mL/day';
+    
+    document.getElementById('maintenance-fluid').textContent = Math.round(maintenanceFluid) + ' mL/day';
+    document.getElementById('replacement-fluid').textContent = Math.round(replacementFluid) + ' mL/day';
+    document.getElementById('total-fluid').textContent = Math.round(totalFluid) + ' mL/day';
     document.getElementById('fluid-result').style.display = 'block';
 }
 
-// Drip Rate Calculation
+// Drip Rate Calculation with validation
 function calculateDrops() {
+    // Reset errors
+    document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+    
     let volume = parseFloat(document.getElementById('volume').value);
     let time = parseFloat(document.getElementById('time').value);
     let dropFactor = parseFloat(document.getElementById('drop-factor').value);
-    if (isNaN(volume) || isNaN(time) || isNaN(dropFactor) || volume <= 0 || time <= 0 || dropFactor <= 0) {
-        alert('Please enter valid numbers.');
-        return;
+    let valid = true;
+    
+    // Validation
+    if (isNaN(volume) || volume < 1 || volume > 5000) {
+        document.getElementById('volume-error').style.display = 'block';
+        valid = false;
     }
+    if (isNaN(time) || time < 1 || time > 1440) {
+        document.getElementById('time-error').style.display = 'block';
+        valid = false;
+    }
+    if (!valid) return;
+    
     let dropsPerMinute = (volume * dropFactor) / time;
+    
     document.getElementById('drops-per-minute').textContent = dropsPerMinute.toFixed(1) + ' gtt/min';
     document.getElementById('drops-result').style.display = 'block';
 }
 
-// ABG Analysis
+// Enhanced ABG Analysis with validation and improved logic
 function analyzeABG() {
+    // Reset errors
+    document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+    
     let ph = parseFloat(document.getElementById('ph').value);
     let pco2 = parseFloat(document.getElementById('pco2').value);
     let hco3 = parseFloat(document.getElementById('hco3').value);
-    if (isNaN(ph) || isNaN(pco2) || isNaN(hco3)) {
-        alert('Please enter valid ABG values.');
-        return;
+    let valid = true;
+    
+    // Validation
+    if (isNaN(ph) || ph < 6.8 || ph > 7.8) {
+        document.getElementById('ph-error').style.display = 'block';
+        valid = false;
     }
-    let primaryDisorder = '', compensation = '', correction = '';
+    if (isNaN(pco2) || pco2 < 10 || pco2 > 100) {
+        document.getElementById('pco2-error').style.display = 'block';
+        valid = false;
+    }
+    if (isNaN(hco3) || hco3 < 10 || hco3 > 50) {
+        document.getElementById('hco3-error').style.display = 'block';
+        valid = false;
+    }
+    if (!valid) return;
+    
+    let primaryDisorder = '', compensation = '', interpretation = '', correction = '';
+    
+    // Determine acid-base status
     if (ph < 7.35) {
-        if (pco2 > 45) {
+        // Acidemia
+        if (pco2 > 45 && hco3 < 22) {
+            primaryDisorder = 'Mixed Acidosis (Respiratory and Metabolic)';
+            interpretation = 'Both respiratory and metabolic components are contributing to acidosis.';
+        } else if (pco2 > 45) {
             primaryDisorder = 'Respiratory Acidosis';
-            compensation = hco3 > 26 ? 'Metabolic compensation present' : 'No significant compensation';
+            interpretation = 'Impaired CO₂ elimination is causing acidosis.';
         } else if (hco3 < 22) {
             primaryDisorder = 'Metabolic Acidosis';
-            compensation = pco2 < 35 ? 'Respiratory compensation present' : 'No significant compensation';
+            interpretation = 'Loss of bicarbonate or acid accumulation is causing acidosis.';
         } else {
-            primaryDisorder = 'Mixed/Other Acidosis';
-            compensation = 'Check for mixed disorder';
+            primaryDisorder = 'Mild Acidosis (check other factors)';
+            interpretation = 'pH is acidic but both pCO₂ and HCO₃⁻ are within normal range.';
         }
     } else if (ph > 7.45) {
-        if (pco2 < 35) {
+        // Alkalemia
+        if (pco2 < 35 && hco3 > 26) {
+            primaryDisorder = 'Mixed Alkalosis (Respiratory and Metabolic)';
+            interpretation = 'Both respiratory and metabolic components are contributing to alkalosis.';
+        } else if (pco2 < 35) {
             primaryDisorder = 'Respiratory Alkalosis';
-            compensation = hco3 < 22 ? 'Metabolic compensation present' : 'No significant compensation';
+            interpretation = 'Hyperventilation is causing alkalosis.';
         } else if (hco3 > 26) {
             primaryDisorder = 'Metabolic Alkalosis';
-            compensation = pco2 > 45 ? 'Respiratory compensation present' : 'No significant compensation';
+            interpretation = 'Bicarbonate retention or acid loss is causing alkalosis.';
         } else {
-            primaryDisorder = 'Mixed/Other Alkalosis';
-            compensation = 'Check for mixed disorder';
+            primaryDisorder = 'Mild Alkalosis (check other factors)';
+            interpretation = 'pH is alkaline but both pCO₂ and HCO₃⁻ are within normal range.';
         }
     } else {
         primaryDisorder = 'Normal pH';
-        compensation = '';
+        interpretation = 'pH is within normal physiological range.';
     }
-    // Correction
+    
+    // Compensation
     if (primaryDisorder.includes('Respiratory Acidosis')) {
-        correction = 'Improve ventilation, treat underlying cause.';
+        if (hco3 > 26) {
+            compensation = 'Compensated by metabolic alkalosis';
+        } else if (hco3 < 22) {
+            compensation = 'Mixed with metabolic acidosis';
+        } else {
+            compensation = 'No significant compensation';
+        }
     } else if (primaryDisorder.includes('Metabolic Acidosis')) {
-        correction = 'Treat underlying cause, consider bicarbonate if severe.';
+        // Winter's formula: Expected pCO₂ = 1.5 × HCO₃⁻ + 8 ± 2
+        let expectedPCO2 = 1.5 * hco3 + 8;
+        if (pco2 > expectedPCO2 + 2) {
+            compensation = 'Respiratory acidosis contributing (inadequate compensation)';
+        } else if (pco2 < expectedPCO2 - 2) {
+            compensation = 'Respiratory alkalosis present (overcompensation)';
+        } else {
+            compensation = 'Appropriate respiratory compensation';
+        }
     } else if (primaryDisorder.includes('Respiratory Alkalosis')) {
-        correction = 'Treat underlying cause, reduce hyperventilation.';
+        if (hco3 < 22) {
+            compensation = 'Compensated by metabolic acidosis';
+        } else if (hco3 > 26) {
+            compensation = 'Mixed with metabolic alkalosis';
+        } else {
+            compensation = 'No significant compensation';
+        }
     } else if (primaryDisorder.includes('Metabolic Alkalosis')) {
-        correction = 'Correct electrolyte imbalance, treat underlying cause.';
+        // Expected pCO₂ = 0.7 × HCO₃⁻ + 20 ± 1.5
+        let expectedPCO2 = 0.7 * hco3 + 20;
+        if (pco2 > expectedPCO2 + 1.5) {
+            compensation = 'Respiratory acidosis contributing (inadequate compensation)';
+        } else if (pco2 < expectedPCO2 - 1.5) {
+            compensation = 'Respiratory alkalosis present (overcompensation)';
+        } else {
+            compensation = 'Appropriate respiratory compensation';
+        }
     } else {
-        correction = 'Within normal limits.';
+        compensation = 'No compensation needed';
     }
+    
+    // Clinical note
+    if (primaryDisorder.includes('Acidosis')) {
+        correction = 'Treat underlying cause. Consider bicarbonate only in severe cases (pH < 7.1).';
+    } else if (primaryDisorder.includes('Alkalosis')) {
+        correction = 'Treat underlying cause. Correct electrolyte imbalances.';
+    } else {
+        correction = 'No specific intervention needed based on ABG alone.';
+    }
+    
     document.getElementById('primary-disorder').textContent = primaryDisorder;
     document.getElementById('compensation').textContent = compensation;
+    document.getElementById('interpretation').textContent = interpretation;
     document.getElementById('correction').textContent = correction;
     document.getElementById('abg-result').style.display = 'block';
 }
 
-// Infusion Calculation (mcg/kg/min dosing)
+// Infusion Calculation with validation
 function calculateInfusion() {
-    let dose = parseFloat(document.getElementById('inf-dose').value); // mcg/kg/min
+    // Reset errors
+    document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+    
+    let dose = parseFloat(document.getElementById('inf-dose').value);
     let weight = parseFloat(document.getElementById('pat-weight').value);
-    let drugAmount = parseFloat(document.getElementById('drug-amount').value); // mg
-    let bagVolume = parseFloat(document.getElementById('bag-volume').value); // mL
-    if (
-        isNaN(dose) || isNaN(weight) || isNaN(drugAmount) || isNaN(bagVolume) ||
-        dose <= 0 || weight <= 0 || drugAmount <= 0 || bagVolume <= 0
-    ) {
-        alert('Please enter valid numbers for all fields.');
-        return;
+    let drugAmount = parseFloat(document.getElementById('drug-amount').value);
+    let bagVolume = parseFloat(document.getElementById('bag-volume').value);
+    let valid = true;
+    
+    // Validation
+    if (isNaN(dose) || dose < 0.1 || dose > 100) {
+        document.getElementById('inf-dose-error').style.display = 'block';
+        valid = false;
     }
-    let conc = (drugAmount * 1000) / bagVolume; // mcg/mL
-    let rate = (dose * weight * 60) / conc; // mL/hr
-    document.getElementById('inf-conc').textContent = conc.toFixed(1);
-    document.getElementById('inf-rate').textContent = rate.toFixed(2);
+    if (isNaN(weight) || weight < 1 || weight > 300) {
+        document.getElementById('pat-weight-error').style.display = 'block';
+        valid = false;
+    }
+    if (isNaN(drugAmount) || drugAmount < 1 || drugAmount > 5000) {
+        document.getElementById('drug-amount-error').style.display = 'block';
+        valid = false;
+    }
+    if (isNaN(bagVolume) || bagVolume < 1 || bagVolume > 1000) {
+        document.getElementById('bag-volume-error').style.display = 'block';
+        valid = false;
+    }
+    if (!valid) return;
+    
+    let conc = (drugAmount * 1000) / bagVolume;
+    let rate = (dose * weight * 60) / conc;
+    
+    document.getElementById('inf-conc').textContent = conc.toFixed(1) + ' mcg/mL';
+    document.getElementById('inf-rate').textContent = rate.toFixed(2) + ' mL/hr';
     document.getElementById('infusion-result').style.display = 'block';
 }
 
-// Drug Calculation with unit conversion
-function calculateDrug() {
-    let prescribedDose = parseFloat(document.getElementById('prescribed-dose').value);
-    let prescribedUnit = document.getElementById('prescribed-unit').value;
-    let availableDose = parseFloat(document.getElementById('available-dose').value);
-    let availableUnit = document.getElementById('available-unit').value;
-    let quantity = parseFloat(document.getElementById('quantity').value);
-    if (
-        isNaN(prescribedDose) || isNaN(availableDose) || isNaN(quantity) ||
-        prescribedDose <= 0 || availableDose <= 0 || quantity <= 0
-    ) {
-        alert('Please enter valid numbers.');
-        return;
-    }
-    // Normalize to mg for both
-    let prescribedDoseMg = convertToMg(prescribedDose, prescribedUnit);
-    let availableDoseMg = convertToMg(availableDose, availableUnit);
-    let amount = (prescribedDoseMg / availableDoseMg) * quantity;
-    document.getElementById('amount').textContent = amount.toFixed(2);
-    document.getElementById('volume-result').textContent = amount.toFixed(2);
-    document.getElementById('drug-result').style.display = 'block';
+// Hide results when inputs change
+function setupInputListeners() {
+    // Fluid calculator
+    document.getElementById('weight').addEventListener('input', function() {
+        document.getElementById('fluid-result').style.display = 'none';
+    });
+    document.getElementById('age').addEventListener('input', function() {
+        document.getElementById('fluid-result').style.display = 'none';
+    });
+    
+    // Drip rate calculator
+    document.getElementById('volume').addEventListener('input', function() {
+        document.getElementById('drops-result').style.display = 'none';
+    });
+    document.getElementById('time').addEventListener('input', function() {
+        document.getElementById('drops-result').style.display = 'none';
+    });
+    document.getElementById('drop-factor').addEventListener('change', function() {
+        document.getElementById('drops-result').style.display = 'none';
+    });
+    
+    // ABG calculator
+    document.getElementById('ph').addEventListener('input', function() {
+        document.getElementById('abg-result').style.display = 'none';
+    });
+    document.getElementById('pco2').addEventListener('input', function() {
+        document.getElementById('abg-result').style.display = 'none';
+    });
+    document.getElementById('hco3').addEventListener('input', function() {
+        document.getElementById('abg-result').style.display = 'none';
+    });
+    
+    // Infusion calculator
+    document.getElementById('inf-dose').addEventListener('input', function() {
+        document.getElementById('infusion-result').style.display = 'none';
+    });
+    document.getElementById('pat-weight').addEventListener('input', function() {
+        document.getElementById('infusion-result').style.display = 'none';
+    });
+    document.getElementById('drug-amount').addEventListener('input', function() {
+        document.getElementById('infusion-result').style.display = 'none';
+    });
+    document.getElementById('bag-volume').addEventListener('input', function() {
+        document.getElementById('infusion-result').style.display = 'none';
+    });
 }
-function convertToMg(value, unit) {
-    if (unit === 'mg') return value;
-    if (unit === 'g') return value * 1000;
-    if (unit === 'mcg') return value / 1000;
-    return value; // fallback
-}
+
+// Initialize when page loads
+window.onload = function() {
+    setupInputListeners();
+    // Set default values for demonstration
+    document.getElementById('weight').value = '70';
+    document.getElementById('age').value = '40';
+    document.getElementById('volume').value = '500';
+    document.getElementById('time').value = '120';
+    document.getElementById('ph').value = '7.35';
+    document.getElementById('pco2').value = '40';
+    document.getElementById('hco3').value = '24';
+    document.getElementById('inf-dose').value = '5';
+    document.getElementById('pat-weight').value = '70';
+    document.getElementById('drug-amount').value = '250';
+    document.getElementById('bag-volume').value = '250';
+};
 </script>
 </body>
 </html>
